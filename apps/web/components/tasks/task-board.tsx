@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import { ViewSwitcher, type TaskView } from "./view-switcher"
 import { TableView } from "./table-view"
 import { KanbanView } from "./kanban-view"
+import { PageHeader } from "../page-header"
 import type { Column, ColumnType, TaskBoard } from "../../lib/types"
 
 const VIEW_STORAGE_KEY = "pai:task-view"
@@ -172,12 +173,12 @@ export function TaskBoardClient({ initialBoard }: TaskBoardProps) {
   }
 
   return (
-    <div className="flex h-full flex-col gap-12">
-      {/* Title bar */}
-      <div className="flex items-center justify-between border-b border-border px-6 py-3">
-        <h1 className="text-lg font-semibold">{board.name}</h1>
-        <ViewSwitcher view={view} onChange={setView} />
-      </div>
+    <div className="flex h-full flex-col">
+      <PageHeader
+        title="Tasks"
+        subtitle="Manage your tasks and projects"
+        actions={<ViewSwitcher view={view} onChange={setView} />}
+      />
 
       {/* Content */}
       <div className="flex-1 overflow-auto">
