@@ -10,9 +10,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const user = session?.user ?? { name: '', email: '' }
 
   return (
-    <SidebarProvider defaultOpen={defaultSidebarOpen}>
+    <SidebarProvider defaultOpen={defaultSidebarOpen} className="max-h-svh overflow-hidden">
       <AppSidebar user={user} />
-      <SidebarInset>{children}</SidebarInset>
+      <SidebarInset className="overflow-hidden">{children}</SidebarInset>
     </SidebarProvider>
   )
 }

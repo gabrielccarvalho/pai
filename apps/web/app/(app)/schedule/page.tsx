@@ -1,17 +1,20 @@
+import { auth } from "../../../auth"
+import { redirect } from "next/navigation"
+import { ScheduleClient } from "../../../components/schedule/schedule-client"
 import { Metadata } from "next"
 
 export const metadata: Metadata = {
   title: "pai | Schedule",
-  description: "Manage your schedule.",
+  description: "View your Google Calendar schedule.",
 }
 
-export default function SchedulePage() {
+export default async function SchedulePage() {
+  const session = await auth()
+  if (!session?.user?.id) redirect("/sign-in")
+
   return (
-    <div className="flex h-full min-h-screen items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-2xl font-semibold">Schedule</h1>
-        <p className="mt-2 text-muted-foreground">Coming soon</p>
-      </div>
+    <div className="flex h-full flex-col">
+      <ScheduleClient />
     </div>
   )
 }

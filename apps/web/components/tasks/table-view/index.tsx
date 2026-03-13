@@ -62,7 +62,6 @@ import { AddColumnDialog } from "./add-column-dialog"
 import { SortableColumnHead } from "./sortable-column-head"
 import { getStatusColumn, getDoneOption } from "../../../lib/task-utils"
 import type { Column, ColumnType, Task, TaskBoard } from "../../../lib/types"
-import { Cancel01Icon } from "@hugeicons/core-free-icons"
 
 const DEFAULT_COL_WIDTH = 180
 const TITLE_COL_WIDTH = 280
