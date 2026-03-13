@@ -1,3 +1,10 @@
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "pai | Schedule",
+  description: "Manage your schedule.",
+}
+
 export default function SchedulePage() {
   return (
     <div className="flex h-full min-h-screen items-center justify-center">

@@ -3,6 +3,12 @@ import { redirect } from "next/navigation"
 import { TaskBoardClient } from "../../../components/tasks/task-board"
 import { getOrCreateDefaultBoard } from "../../../lib/tasks"
 import type { TaskBoard } from "../../../lib/types"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "pai | Tasks",
+  description: "Manage your tasks.",
+}
 
 export default async function TasksPage() {
   const session = await auth()

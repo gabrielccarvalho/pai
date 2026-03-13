@@ -1,3 +1,10 @@
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "pai | To-Do List",
+  description: "Manage your to-dos.",
+}
+
 export default function TodoPage() {
   return (
     <div className="flex h-full min-h-screen items-center justify-center">
