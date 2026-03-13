@@ -50,6 +50,7 @@ export function TaskEditModal({
                 onUpdate={(values) => onUpdateTask(task.id, values)}
                 onCreateOption={onCreateOption}
                 onUpdateOption={onUpdateOption}
+                multiline
               />
             </div>
           )}

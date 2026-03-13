@@ -13,9 +13,10 @@ interface CellProps {
   onUpdate: (values: Record<string, unknown>) => void
   onCreateOption?: (columnId: string, label: string) => Promise<void>
   onUpdateOption?: (optionId: string, color: string | null) => Promise<void>
+  multiline?: boolean
 }
 
-export function Cell({ column, task, onUpdate, onCreateOption, onUpdateOption }: CellProps) {
+export function Cell({ column, task, onUpdate, onCreateOption, onUpdateOption, multiline }: CellProps) {
   const value = task.values[column.id]
 
   function update(newValue: unknown) {
@@ -28,6 +29,7 @@ export function Cell({ column, task, onUpdate, onCreateOption, onUpdateOption }:
         <CellText
           value={(value as string) ?? ''}
           onChange={update}
+          multiline={multiline}
         />
       )
 
