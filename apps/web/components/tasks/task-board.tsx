@@ -45,6 +45,7 @@ export function TaskBoardClient({ initialBoard }: TaskBoardProps) {
     if (res.ok) {
       const task = await res.json()
       setBoard((b) => ({ ...b, tasks: [...b.tasks, task] }))
+      return task
     }
   }
 
@@ -200,6 +201,9 @@ export function TaskBoardClient({ initialBoard }: TaskBoardProps) {
             board={board}
             onAddTask={handleAddTask}
             onDeleteTask={handleDeleteTask}
+            onUpdateTask={handleUpdateTask}
+            onCreateOption={handleCreateOption}
+            onUpdateOption={handleUpdateOption}
           />
         )}
       </div>

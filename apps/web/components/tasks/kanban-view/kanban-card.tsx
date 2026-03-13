@@ -1,8 +1,19 @@
 'use client'
 
+import React, { useState } from 'react'
+import { useDraggable } from '@dnd-kit/core'
+import { CSS } from '@dnd-kit/utilities'
 import { format, parseISO } from 'date-fns'
 import { Badge } from '@workspace/ui/components/badge'
-import { Delete01Icon } from '@/components/icons'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@workspace/ui/components/dropdown-menu'
+import { Delete01Icon, MoreVerticalIcon, PencilEdit01Icon } from '@/components/icons'
+import { cn } from '@workspace/ui/lib/utils'
+import { TaskEditModal } from './task-edit-modal'
 import type { Column, ColumnOption, Task } from '../../../lib/types'
 
 const PRIORITY_COLORS: Record<string, string> = {
@@ -15,9 +26,14 @@ interface KanbanCardProps {
   task: Task
   columns: Column[]
   onDelete: () => void
+  onUpdateTask?: (taskId: string, values: Record<string, unknown>) => Promise<void>
+  onCreateOption?: (columnId: string, label: string) => Promise<void>
+  onUpdateOption?: (optionId: string, color: string | null) => Promise<void>
+  isDragging?: boolean
+  isDragOverlay?: boolean
 }
 
-function getOptionLabel(columns: Column[], columnName: string, value: unknown): ColumnOption | null {
+function getOption(columns: Column[], columnName: string, value: unknown): ColumnOption | null {
   const col = columns.find((c) => c.name.toLowerCase() === columnName.toLowerCase())
   if (!col || !value) return null
   return col.options.find((o) => o.id === value) ?? null
@@ -26,7 +42,6 @@ function getOptionLabel(columns: Column[], columnName: string, value: unknown): 
 function getTitleValue(task: Task, columns: Column[]): string {
   const titleCol = columns.find((c) => c.name.toLowerCase() === 'title')
   if (!titleCol) {
-    // Fallback: first text column
     const textCol = columns.find((c) => c.type === 'text')
     if (!textCol) return 'Untitled'
     return (task.values[textCol.id] as string) || 'Untitled'
@@ -34,11 +49,32 @@ function getTitleValue(task: Task, columns: Column[]): string {
   return (task.values[titleCol.id] as string) || 'Untitled'
 }
 
-export function KanbanCard({ task, columns, onDelete }: KanbanCardProps) {
+export function KanbanCard({
+  task,
+  columns,
+  onDelete,
+  onUpdateTask,
+  onCreateOption,
+  onUpdateOption,
+  isDragging,
+  isDragOverlay,
+}: KanbanCardProps) {
+  const [editOpen, setEditOpen] = useState(false)
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: task.id })
+
+  const style = isDragOverlay
+    ? { transform: CSS.Translate.toString(transform) }
+    : undefined
+
   const title = getTitleValue(task, columns)
-  const priorityOpt = getOptionLabel(columns, 'priority', task.values[
-    columns.find((c) => c.name.toLowerCase() === 'priority')?.id ?? ''
-  ])
+
+  const priorityCol = columns.find((c) => c.name.toLowerCase() === 'priority')
+  const priorityOpt = getOption(columns, 'priority', priorityCol ? task.values[priorityCol.id] : null)
+
+  const companyCol = columns.find((c) => c.name.toLowerCase() === 'company')
+  const companyRaw = companyCol ? task.values[companyCol.id] : null
+  const companyOpt = companyCol ? getOption(columns, 'company', companyRaw) : null
+
   const dueDateCol = columns.find((c) => c.name.toLowerCase() === 'due date' || c.type === 'date')
   const dueDate = dueDateCol ? (task.values[dueDateCol.id] as string) : null
 
@@ -47,43 +83,115 @@ export function KanbanCard({ task, columns, onDelete }: KanbanCardProps) {
     : null
 
   return (
-    <div className="group relative rounded-lg border border-border bg-card p-3 shadow-sm hover:shadow-md transition-shadow">
-      <button
-        className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded opacity-0 text-muted-foreground transition-opacity hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
-        onClick={onDelete}
-        title="Delete task"
+    <>
+      <div
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        {...listeners}
+        onClick={() => { if (!isDragOverlay) setEditOpen(true) }}
+        className={cn(
+          "group relative rounded-lg border border-border bg-card p-3 shadow-sm transition-shadow cursor-pointer active:cursor-grabbing",
+          isDragging && "opacity-30",
+          isDragOverlay && "shadow-lg rotate-1",
+          !isDragging && !isDragOverlay && "hover:shadow-md"
+        )}
       >
-        <Delete01Icon className="h-3.5 w-3.5" />
-      </button>
+        {/* Three-dot menu */}
+        <div
+          className="absolute right-1.5 top-1.5 opacity-0 transition-opacity group-hover:opacity-100"
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <MoreVerticalIcon className="h-3.5 w-3.5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                className="gap-2 whitespace-nowrap text-muted-foreground"
+                onSelect={() => setEditOpen(true)}
+              >
+                <PencilEdit01Icon className="h-3.5 w-3.5 shrink-0" />
+                Edit task
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="gap-2 whitespace-nowrap text-destructive focus:text-destructive"
+                onSelect={onDelete}
+              >
+                <Delete01Icon className="h-3.5 w-3.5 shrink-0" />
+                Delete task
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
 
-      <p className="pr-6 text-sm font-medium leading-snug">{title}</p>
-
-      {(priorityOpt || dueDate) && (
-        <div className="mt-2 flex flex-wrap items-center gap-1.5">
-          {priorityOpt && (
+        {companyOpt && (
+          <div className="mb-1.5">
             <Badge
               variant="secondary"
-              className="text-[10px]"
+              className="text-xs"
               style={
-                priorityColor
-                  ? {
-                      backgroundColor: priorityColor + '22',
-                      borderColor: priorityColor + '55',
-                      color: priorityColor,
-                    }
+                companyOpt.color
+                  ? ({
+                      backgroundColor: companyOpt.color + '33',
+                      borderColor: companyOpt.color,
+                      color: companyOpt.color,
+                    } as React.CSSProperties)
                   : {}
               }
             >
-              {priorityOpt.label}
+              {companyOpt.label}
             </Badge>
-          )}
-          {dueDate && (
-            <span className="text-[10px] text-muted-foreground">
-              {format(parseISO(dueDate), 'MMM d')}
-            </span>
-          )}
-        </div>
+          </div>
+        )}
+
+        <p className="pr-6 text-sm font-medium leading-snug">{title}</p>
+
+        {(priorityOpt || dueDate) && (
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            {priorityOpt && (
+              <Badge
+                variant="secondary"
+                className="text-[10px]"
+                style={
+                  priorityColor
+                    ? {
+                        backgroundColor: priorityColor + '22',
+                        borderColor: priorityColor + '55',
+                        color: priorityColor,
+                      }
+                    : {}
+                }
+              >
+                {priorityOpt.label}
+              </Badge>
+            )}
+            {dueDate && (
+              <span className="text-[10px] text-muted-foreground">
+                {format(parseISO(dueDate), 'MMM d')}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+
+      {onUpdateTask && (
+        <TaskEditModal
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          task={task}
+          columns={columns}
+          onUpdateTask={onUpdateTask}
+          onCreateOption={onCreateOption ?? (async () => {})}
+          onUpdateOption={onUpdateOption ?? (async () => {})}
+        />
       )}
-    </div>
+    </>
   )
 }

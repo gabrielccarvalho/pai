@@ -42,6 +42,7 @@ import {
   TextSquareIcon as TextSquareIconData,
   Tick02Icon as Tick02IconData,
   UserIcon as UserIconData,
+  MoreVerticalIcon as MoreVerticalIconData,
 } from '@hugeicons/core-free-icons'
 
 type IconProps = Omit<HugeiconsIconProps, 'icon'>
@@ -82,3 +83,4 @@ export const TableIcon = (p: IconProps) => <HugeiconsIcon icon={TableIconData} {
 export const Task01Icon = (p: IconProps) => <HugeiconsIcon icon={Task01IconData} {...p} />
 export const TextSquareIcon = (p: IconProps) => <HugeiconsIcon icon={TextSquareIconData} {...p} />
 export const Tick02Icon = (p: IconProps) => <HugeiconsIcon icon={Tick02IconData} {...p} />
+export const MoreVerticalIcon = (p: IconProps) => <HugeiconsIcon icon={MoreVerticalIconData} {...p} />

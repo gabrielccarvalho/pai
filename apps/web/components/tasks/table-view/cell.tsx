@@ -5,6 +5,7 @@ import { CellText } from './cell-text'
 import { CellNumber } from './cell-number'
 import { CellSelect } from './cell-select'
 import { CellDate } from './cell-date'
+import { CellUrl } from './cell-url'
 
 interface CellProps {
   column: Column
@@ -84,6 +85,14 @@ export function Cell({ column, task, onUpdate, onCreateOption, onUpdateOption }:
     case 'date':
       return (
         <CellDate
+          value={(value as string) ?? null}
+          onChange={update}
+        />
+      )
+
+    case 'url':
+      return (
+        <CellUrl
           value={(value as string) ?? null}
           onChange={update}
         />

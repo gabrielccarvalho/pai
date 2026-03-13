@@ -47,8 +47,16 @@ import {
   Add01Icon,
   Delete01Icon,
   FilterIcon,
+  MoreVerticalIcon,
   Search01Icon,
+  Tick02Icon,
 } from "@/components/icons"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@workspace/ui/components/dropdown-menu"
 import { cn } from "@workspace/ui/lib/utils"
 import { Cell } from "./cell"
 import { ColumnHeader } from "./column-header"
@@ -227,25 +235,35 @@ export function TableView({
     })
   }
 
+  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({})
+
   const columns = useMemo<ColumnDef<Task>[]>(
     () => [
       {
-        id: "_delete",
-        size: 32,
-        minSize: 32,
-        maxSize: 32,
+        id: "_select",
+        size: 36,
+        minSize: 36,
+        maxSize: 36,
         enableResizing: false,
         enableSorting: false,
         enableColumnFilter: false,
         enableGlobalFilter: false,
         cell: ({ row }) => (
-          <button
-            className="mx-auto flex h-5 w-5 items-center justify-center rounded text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive"
-            onClick={() => onDeleteTask(row.original.id)}
-            title="Delete task"
-          >
-            <Delete01Icon className="h-3.5 w-3.5" />
-          </button>
+          <div className="flex h-full min-h-[36px] items-center justify-center px-2">
+            <input
+              type="checkbox"
+              checked={rowSelection[row.original.id] ?? false}
+              onChange={(e) =>
+                setRowSelection((prev) => ({
+                  ...prev,
+                  [row.original.id]: e.target.checked,
+                }))
+              }
+              className="h-3.5 w-3.5 cursor-pointer accent-primary opacity-0 transition-opacity group-hover:opacity-100"
+              style={{ opacity: rowSelection[row.original.id] ? 1 : undefined }}
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
         ),
       },
       ...board.columns.map(
@@ -276,10 +294,81 @@ export function TableView({
           ),
         })
       ),
+      {
+        id: "_actions",
+        size: 36,
+        minSize: 36,
+        maxSize: 36,
+        enableResizing: false,
+        enableSorting: false,
+        enableColumnFilter: false,
+        enableGlobalFilter: false,
+        cell: ({ row }) => {
+          const statusCol = board.columns.find(
+            (c) => c.name.toLowerCase() === "status" && c.type === "select"
+          )
+          const doneOption = statusCol?.options.find(
+            (o) => o.label.toLowerCase() === "done"
+          )
+          const isDone =
+            statusCol &&
+            doneOption &&
+            row.original.values[statusCol.id] === doneOption.id
+
+          return (
+            <div className="flex h-full min-h-[36px] items-center justify-center">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:bg-muted hover:text-foreground"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <MoreVerticalIcon className="h-3.5 w-3.5" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {isDone ? (
+                    <DropdownMenuItem
+                      disabled
+                      className="cursor-default gap-2 whitespace-nowrap bg-emerald-200/20 text-emerald-500 opacity-100 focus:bg-emerald-200/20 focus:text-emerald-500"
+                    >
+                      <Tick02Icon className="h-3.5 w-3.5 shrink-0" />
+                      Already Done
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem
+                      className="gap-2 whitespace-nowrap text-muted-foreground"
+                      onSelect={() => {
+                        if (!statusCol || !doneOption) return
+                        onUpdateTask(row.original.id, {
+                          ...row.original.values,
+                          [statusCol.id]: doneOption.id,
+                        })
+                      }}
+                    >
+                      <Tick02Icon className="h-3.5 w-3.5 shrink-0" />
+                      Mark as done
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem
+                    className="gap-2 whitespace-nowrap text-destructive focus:text-destructive"
+                    onSelect={() => onDeleteTask(row.original.id)}
+                  >
+                    <Delete01Icon className="h-3.5 w-3.5 shrink-0" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )
+        },
+      },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       board.columns,
+      board.tasks,
+      rowSelection,
       onDeleteTask,
       onUpdateTask,
       onRenameColumn,
@@ -487,12 +576,26 @@ export function TableView({
                     className="border-b border-border bg-muted/30 hover:bg-muted/30"
                   >
                     {hg.headers.map((header) =>
-                      header.column.id === "_delete" ? (
+                      header.column.id === "_select" ? (
                         <TableHead
                           key={header.id}
                           style={{ width: header.column.getSize() }}
-                          className="h-8 border-r border-border p-0"
+                          className="h-8 border-r border-border p-0 last:border-r-0"
                         />
+                      ) : header.column.id === "_actions" ? (
+                        <TableHead
+                          key={header.id}
+                          style={{ width: header.column.getSize() }}
+                          className="h-8 border-r border-border p-0 last:border-r-0"
+                        >
+                          <button
+                            className="flex h-8 w-full items-center justify-center text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                            onClick={() => setAddColOpen(true)}
+                            title="Add column"
+                          >
+                            <Add01Icon className="h-3.5 w-3.5" />
+                          </button>
+                        </TableHead>
                       ) : (
                         <SortableColumnHead key={header.id} header={header}>
                           {(dragHandleProps) => (
@@ -515,15 +618,6 @@ export function TableView({
                         </SortableColumnHead>
                       )
                     )}
-                    <TableHead className="w-auto px-2">
-                      <button
-                        className="flex h-7 items-center gap-1.5 rounded px-2 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                        onClick={() => setAddColOpen(true)}
-                      >
-                        <Add01Icon className="h-3.5 w-3.5" />
-                        Add column
-                      </button>
-                    </TableHead>
                   </TableRow>
                 ))}
               </TableHeader>
@@ -536,7 +630,7 @@ export function TableView({
                     {row.getVisibleCells().map((cell) => (
                       <TableCell
                         key={cell.id}
-                        className="border-r border-border p-0 align-top last:border-r-0"
+                        className="border-r border-border p-0 align-middle last:border-r-0"
                       >
                         {flexRender(
                           cell.column.columnDef.cell,
@@ -544,7 +638,6 @@ export function TableView({
                         )}
                       </TableCell>
                     ))}
-                    <TableCell className="p-0" />
                   </TableRow>
                 ))}
               </TableBody>

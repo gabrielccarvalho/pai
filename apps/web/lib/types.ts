@@ -6,6 +6,7 @@ export type ColumnType =
   | 'select'
   | 'multiselect'
   | 'date'
+  | 'url'
 
 export interface ColumnOption {
   id: string

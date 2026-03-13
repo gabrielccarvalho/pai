@@ -54,6 +54,7 @@ const DEFAULT_TYPE_ICONS: Record<ColumnType, React.ElementType> = {
   select: Sorting01Icon,
   multiselect: FilterIcon,
   date: Calendar01Icon,
+  url: Link01Icon,
 }
 
 export const ICON_OPTIONS: { key: string; label: string; Component: React.ElementType }[] = [

@@ -110,4 +110,5 @@ enum ColumnType {
   select
   multiselect
   date
+  url
 }

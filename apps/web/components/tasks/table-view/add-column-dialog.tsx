@@ -20,6 +20,7 @@ const COLUMN_TYPES: { value: ColumnType; label: string; description: string }[] 
   { value: 'number_integer', label: 'Integer', description: 'Whole number' },
   { value: 'number_float', label: 'Decimal', description: 'Decimal number' },
   { value: 'number_hour', label: 'Hours', description: 'Time in hours' },
+  { value: 'url', label: 'URL', description: 'Link to a webpage' },
 ]
 
 interface AddColumnDialogProps {
