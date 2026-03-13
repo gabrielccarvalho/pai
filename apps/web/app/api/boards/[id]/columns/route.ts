@@ -1,15 +1,15 @@
 import { NextResponse } from 'next/server'
-import { auth } from '../../../../../auth'
 import { prisma } from '../../../../../lib/prisma'
+import { requireAuth, nextOrder } from '../../../../../lib/api-utils'
 
 type Params = { params: Promise<{ id: string }> }
 
 export async function PATCH(req: Request, { params }: Params) {
-  const session = await auth()
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { userId, error } = await requireAuth()
+  if (error) return error
 
   const { id: boardId } = await params
-  const board = await prisma.taskBoard.findFirst({ where: { id: boardId, userId: session.user.id } })
+  const board = await prisma.taskBoard.findFirst({ where: { id: boardId, userId } })
   if (!board) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const { order }: { order: { id: string; order: number }[] } = await req.json()
@@ -20,24 +20,17 @@ export async function PATCH(req: Request, { params }: Params) {
 }
 
 export async function POST(req: Request, { params }: Params) {
-  const session = await auth()
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { userId, error } = await requireAuth()
+  if (error) return error
 
   const { id: boardId } = await params
-
-  // Verify board belongs to user
-  const board = await prisma.taskBoard.findFirst({ where: { id: boardId, userId: session.user.id } })
+  const board = await prisma.taskBoard.findFirst({ where: { id: boardId, userId } })
   if (!board) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const { name, type } = await req.json()
-
-  const maxOrder = await prisma.column.aggregate({
-    where: { boardId },
-    _max: { order: true },
-  })
-
+  const order = await nextOrder('column', { boardId })
   const column = await prisma.column.create({
-    data: { name, type, order: (maxOrder._max.order ?? -1) + 1, boardId },
+    data: { name, type, order, boardId },
     include: { options: true },
   })
   return NextResponse.json(column, { status: 201 })

@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server'
-import { auth } from '../../../auth'
 import { prisma } from '../../../lib/prisma'
+import { requireAuth } from '../../../lib/api-utils'
 
 export async function GET() {
-  const session = await auth()
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { userId, error } = await requireAuth()
+  if (error) return error
 
   const boards = await prisma.taskBoard.findMany({
-    where: { userId: session.user.id },
+    where: { userId },
     include: { columns: { include: { options: { orderBy: { order: 'asc' } } }, orderBy: { order: 'asc' } } },
     orderBy: { createdAt: 'asc' },
   })
@@ -15,12 +15,12 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const session = await auth()
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { userId, error } = await requireAuth()
+  if (error) return error
 
   const { name } = await req.json()
   const board = await prisma.taskBoard.create({
-    data: { name, userId: session.user.id },
+    data: { name, userId },
     include: { columns: { include: { options: true } } },
   })
   return NextResponse.json(board, { status: 201 })

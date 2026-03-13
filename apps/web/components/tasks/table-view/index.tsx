@@ -11,7 +11,6 @@ import {
   type SortingState,
   type ColumnFiltersState,
   type FilterFn,
-  type Header,
   type ColumnSizingState,
   type ColumnSizingInfoState,
 } from "@tanstack/react-table"
@@ -27,9 +26,7 @@ import {
   arrayMove,
   SortableContext,
   horizontalListSortingStrategy,
-  useSortable,
 } from "@dnd-kit/sortable"
-import { CSS } from "@dnd-kit/utilities"
 import {
   Table,
   TableBody,
@@ -61,6 +58,8 @@ import { cn } from "@workspace/ui/lib/utils"
 import { Cell } from "./cell"
 import { ColumnHeader } from "./column-header"
 import { AddColumnDialog } from "./add-column-dialog"
+import { SortableColumnHead } from "./sortable-column-head"
+import { getStatusColumn, getDoneOption } from "../../../lib/task-utils"
 import type { Column, ColumnType, Task, TaskBoard } from "../../../lib/types"
 
 const DEFAULT_COL_WIDTH = 180
@@ -110,56 +109,6 @@ interface TableViewProps {
   onUpdateOption: (optionId: string, color: string | null) => Promise<void>
 }
 
-function SortableColumnHead({
-  header,
-  children,
-}: {
-  header: Header<Task, unknown>
-  children: (
-    dragHandleProps: React.HTMLAttributes<HTMLButtonElement>
-  ) => React.ReactNode
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
-    id: header.column.id,
-  })
-  return (
-    <TableHead
-      ref={setNodeRef}
-      style={{
-        width: header.column.getSize(),
-        transform: CSS.Transform.toString(transform),
-        transition,
-      }}
-      className={cn(
-        "group relative h-8 border-r border-border p-0 last:border-r-0",
-        isDragging && "opacity-40"
-      )}
-    >
-      {children({
-        ...attributes,
-        ...listeners,
-      } as React.HTMLAttributes<HTMLButtonElement>)}
-      {/* Resize handle */}
-      <div
-        onMouseDown={header.getResizeHandler()}
-        onTouchStart={header.getResizeHandler()}
-        className={cn(
-          "absolute top-0 right-0 h-full w-1 cursor-col-resize touch-none select-none",
-          "opacity-0 transition-opacity group-hover:opacity-100",
-          "bg-primary/40",
-          header.column.getIsResizing() && "bg-primary opacity-100"
-        )}
-      />
-    </TableHead>
-  )
-}
 
 export function TableView({
   board,
@@ -304,12 +253,8 @@ export function TableView({
         enableColumnFilter: false,
         enableGlobalFilter: false,
         cell: ({ row }) => {
-          const statusCol = board.columns.find(
-            (c) => c.name.toLowerCase() === "status" && c.type === "select"
-          )
-          const doneOption = statusCol?.options.find(
-            (o) => o.label.toLowerCase() === "done"
-          )
+          const statusCol = getStatusColumn(board.columns)
+          const doneOption = getDoneOption(statusCol)
           const isDone =
             statusCol &&
             doneOption &&

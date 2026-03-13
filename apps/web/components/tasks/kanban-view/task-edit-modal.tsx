@@ -7,6 +7,7 @@ import {
   DialogTitle,
 } from '@workspace/ui/components/dialog'
 import { Cell } from '../table-view/cell'
+import { getTitleColumn } from '../../../lib/task-utils'
 import type { Column, Task } from '../../../lib/types'
 
 interface TaskEditModalProps {
@@ -28,9 +29,7 @@ export function TaskEditModal({
   onCreateOption,
   onUpdateOption,
 }: TaskEditModalProps) {
-  const titleCol = columns.find(
-    (c) => c.name.toLowerCase() === 'title' || (c.type === 'text' && c.order === 1)
-  )
+  const titleCol = getTitleColumn(columns)
   const otherCols = columns.filter((c) => c.id !== titleCol?.id)
 
   return (

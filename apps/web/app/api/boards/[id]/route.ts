@@ -1,16 +1,16 @@
 import { NextResponse } from 'next/server'
-import { auth } from '../../../../auth'
 import { prisma } from '../../../../lib/prisma'
+import { requireAuth } from '../../../../lib/api-utils'
 
 type Params = { params: Promise<{ id: string }> }
 
 export async function GET(_req: Request, { params }: Params) {
-  const session = await auth()
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { userId, error } = await requireAuth()
+  if (error) return error
 
   const { id } = await params
   const board = await prisma.taskBoard.findFirst({
-    where: { id, userId: session.user.id },
+    where: { id, userId },
     include: {
       columns: { include: { options: { orderBy: { order: 'asc' } } }, orderBy: { order: 'asc' } },
       tasks: { orderBy: { order: 'asc' } },
@@ -21,23 +21,20 @@ export async function GET(_req: Request, { params }: Params) {
 }
 
 export async function PUT(req: Request, { params }: Params) {
-  const session = await auth()
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { userId, error } = await requireAuth()
+  if (error) return error
 
   const { id } = await params
   const { name } = await req.json()
-  const board = await prisma.taskBoard.updateMany({
-    where: { id, userId: session.user.id },
-    data: { name },
-  })
+  const board = await prisma.taskBoard.updateMany({ where: { id, userId }, data: { name } })
   return NextResponse.json(board)
 }
 
 export async function DELETE(_req: Request, { params }: Params) {
-  const session = await auth()
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { userId, error } = await requireAuth()
+  if (error) return error
 
   const { id } = await params
-  await prisma.taskBoard.deleteMany({ where: { id, userId: session.user.id } })
+  await prisma.taskBoard.deleteMany({ where: { id, userId } })
   return NextResponse.json({ success: true })
 }

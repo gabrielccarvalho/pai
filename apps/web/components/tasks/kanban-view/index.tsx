@@ -12,7 +12,8 @@ import {
 import { useId, useState } from 'react'
 import { KanbanColumn } from './kanban-column'
 import { KanbanCard } from './kanban-card'
-import type { Column, Task, TaskBoard } from '../../../lib/types'
+import { getStatusColumn } from '../../../lib/task-utils'
+import type { Task, TaskBoard } from '../../../lib/types'
 
 interface KanbanViewProps {
   board: TaskBoard
@@ -31,10 +32,7 @@ export function KanbanView({ board, onAddTask, onDeleteTask, onUpdateTask, onCre
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
   )
 
-  // Find the Status column
-  const statusCol: Column | undefined =
-    board.columns.find((c) => c.name.toLowerCase() === 'status' && c.type === 'select') ??
-    board.columns.find((c) => c.type === 'select')
+  const statusCol = getStatusColumn(board.columns)
 
   if (!statusCol) {
     return (

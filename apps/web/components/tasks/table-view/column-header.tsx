@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { useState } from 'react'
 import {
   DropdownMenu,
@@ -96,6 +97,13 @@ function getIconComponent(col: Column): React.ElementType {
   return DEFAULT_TYPE_ICONS[col.type] ?? TextSquareIcon
 }
 
+// Defined at module level so the component identity is always stable.
+// Uses React.createElement with a lowercase ref to satisfy static-components rule.
+function ColumnIcon({ column, className }: { column: Column; className?: string }) {
+  const icon = getIconComponent(column)
+  return React.createElement(icon, { className })
+}
+
 interface ColumnHeaderProps {
   column: Column
   onRename: (name: string) => void
@@ -113,8 +121,6 @@ export function ColumnHeader({
 }: ColumnHeaderProps) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(column.name)
-  const Icon = getIconComponent(column)
-
   function commitRename() {
     setEditing(false)
     if (draft.trim() && draft !== column.name) onRename(draft.trim())
@@ -136,7 +142,7 @@ export function ColumnHeader({
           </svg>
         </button>
       )}
-      <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+      <ColumnIcon column={column} className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
       {editing ? (
         <input
           autoFocus
@@ -174,7 +180,7 @@ export function ColumnHeader({
           </DropdownMenuItem>
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>
-              <Icon className="mr-2 h-3.5 w-3.5" />
+              <ColumnIcon column={column} className="mr-2 h-3.5 w-3.5" />
               Change icon
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent className="p-1.5">

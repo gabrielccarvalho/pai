@@ -6,6 +6,7 @@ import { Badge } from '@workspace/ui/components/badge'
 import { Input } from '@workspace/ui/components/input'
 import { Add01Icon, Tick02Icon } from '@/components/icons'
 import { cn } from '@workspace/ui/lib/utils'
+import { optionBadgeStyle } from '../../../lib/task-utils'
 import type { ColumnOption } from '../../../lib/types'
 
 const PRESET_COLORS = [
@@ -100,7 +101,7 @@ export function CellSelect({
                   className="text-xs"
                   style={
                     o.color
-                      ? ({ backgroundColor: o.color + '33', borderColor: o.color, color: o.color } as React.CSSProperties)
+                      ? optionBadgeStyle(o.color)
                       : {}
                   }
                 >
@@ -116,7 +117,7 @@ export function CellSelect({
               className="text-xs"
               style={
                 (selected as ColumnOption).color
-                  ? ({ backgroundColor: (selected as ColumnOption).color + '33', borderColor: (selected as ColumnOption).color, color: (selected as ColumnOption).color } as React.CSSProperties)
+                  ? optionBadgeStyle((selected as ColumnOption).color)
                   : {}
               }
             >
