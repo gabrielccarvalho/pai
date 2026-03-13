@@ -1,0 +1,112 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Auth (NextAuth.js v5 + Prisma Adapter) ──────────────────────────────────
+
+model User {
+  id            String      @id @default(cuid())
+  name          String?
+  email         String      @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  boards        TaskBoard[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Tasks ───────────────────────────────────────────────────────────────────
+
+model TaskBoard {
+  id        String    @id @default(cuid())
+  name      String
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks     Task[]
+  columns   Column[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Column {
+  id      String         @id @default(cuid())
+  name    String
+  type    ColumnType
+  order   Int
+  boardId String
+  board   TaskBoard      @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  options ColumnOption[]
+}
+
+model ColumnOption {
+  id       String @id @default(cuid())
+  label    String
+  color    String?
+  order    Int    @default(0)
+  columnId String
+  column   Column @relation(fields: [columnId], references: [id], onDelete: Cascade)
+}
+
+model Task {
+  id        String    @id @default(cuid())
+  order     Int       @default(0)
+  values    Json      @default("{}")
+  boardId   String
+  board     TaskBoard @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+enum ColumnType {
+  text
+  number_integer
+  number_float
+  number_hour
+  select
+  multiselect
+  date
+}
