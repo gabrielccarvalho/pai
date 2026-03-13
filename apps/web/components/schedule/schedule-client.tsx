@@ -44,6 +44,7 @@ interface CalendarEvent {
   colorId: string | null
   htmlLink: string | null
   allDay: boolean
+  selfResponseStatus: string
   calendarId: string
 }
 
@@ -127,16 +128,20 @@ function getWeekDays(weekStart: Date): Date[] {
   return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
 }
 
+const EVENT_MARGIN_PX = 5
+
 function eventTopPx(event: CalendarEvent): number {
-  if (!event.start.dateTime) return 0
+  if (!event.start.dateTime) return EVENT_MARGIN_PX
   const dt = parseISO(event.start.dateTime)
-  return ((dt.getHours() * 60 + dt.getMinutes() - START_HOUR * 60) / 60) * HOUR_HEIGHT
+  return ((dt.getHours() * 60 + dt.getMinutes() - START_HOUR * 60) / 60) * HOUR_HEIGHT + EVENT_MARGIN_PX
 }
 
+const MIN_EVENT_HEIGHT_PX = 20
+
 function eventHeightPx(event: CalendarEvent): number {
-  if (!event.start.dateTime || !event.end.dateTime) return HOUR_HEIGHT / 2
-  const minutes = Math.max(differenceInMinutes(parseISO(event.end.dateTime), parseISO(event.start.dateTime)), 15)
-  return (minutes / 60) * HOUR_HEIGHT
+  if (!event.start.dateTime || !event.end.dateTime) return Math.max(HOUR_HEIGHT / 2 - EVENT_MARGIN_PX * 2, MIN_EVENT_HEIGHT_PX)
+  const minutes = differenceInMinutes(parseISO(event.end.dateTime), parseISO(event.start.dateTime))
+  return Math.max((minutes / 60) * HOUR_HEIGHT - EVENT_MARGIN_PX * 2, MIN_EVENT_HEIGHT_PX)
 }
 
 function currentTimePx(): number {
@@ -148,39 +153,61 @@ function weekKey(date: Date): string {
   return format(startOfWeek(date, { weekStartsOn: CALENDAR_CONFIG.weekStartsOn }), "yyyy-MM-dd")
 }
 
-function layoutEvents(events: CalendarEvent[]): Array<CalendarEvent & { col: number; cols: number }> {
-  const sorted = [...events].sort((a, b) => {
-    const aTime = a.start.dateTime ?? a.start.date ?? ""
-    const bTime = b.start.dateTime ?? b.start.date ?? ""
-    return aTime.localeCompare(bTime)
-  })
+interface LayoutEvent {
+  event: CalendarEvent
+  leftPct: number
+  widthPct: number
+  zIndex: number
+}
 
-  const columns: CalendarEvent[][] = []
-  const result: Array<CalendarEvent & { col: number; cols: number }> = []
+function layoutEvents(events: CalendarEvent[]): LayoutEvent[] {
+  if (events.length === 0) return []
 
-  for (const event of sorted) {
-    const startMs = event.start.dateTime ? parseISO(event.start.dateTime).getTime() : 0
-    let placed = false
-    for (let c = 0; c < columns.length; c++) {
-      const col = columns[c]
-      if (!col) continue
-      const last = col[col.length - 1]
-      if (!last) continue
-      const lastEnd = last.end.dateTime ? parseISO(last.end.dateTime).getTime() : 0
-      if (lastEnd <= startMs) {
-        col.push(event)
-        result.push({ ...event, col: c, cols: 0 })
-        placed = true
-        break
-      }
-    }
-    if (!placed) {
-      columns.push([event])
-      result.push({ ...event, col: columns.length - 1, cols: 0 })
-    }
+  function getStartMs(e: CalendarEvent) {
+    return e.start.dateTime ? parseISO(e.start.dateTime).getTime() : 0
+  }
+  function getEndMs(e: CalendarEvent) {
+    return e.end.dateTime ? parseISO(e.end.dateTime).getTime() : 0
+  }
+  function getDuration(e: CalendarEvent) {
+    return getEndMs(e) - getStartMs(e)
+  }
+  function overlaps(a: CalendarEvent, b: CalendarEvent) {
+    return getStartMs(a) < getEndMs(b) && getEndMs(a) > getStartMs(b)
   }
 
-  return result.map((e) => ({ ...e, cols: columns.length }))
+  // Events that are longer (or same duration with lower id) take the "base" role
+  function isBase(e: CalendarEvent, other: CalendarEvent) {
+    const dA = getDuration(e), dB = getDuration(other)
+    if (dA !== dB) return dA > dB
+    return e.id < other.id
+  }
+
+  const SAME_START_MS = 2 * 60 * 1000 // 2-minute threshold for "same start"
+
+  return events.map((event) => {
+    const longerOverlapping = events.filter(
+      (other) => other !== event && overlaps(event, other) && isBase(other, event)
+    )
+
+    if (longerOverlapping.length === 0) {
+      // This is the base event — full width, behind everything else
+      return { event, leftPct: 0, widthPct: 100, zIndex: 1 }
+    }
+
+    // Use the longest overlapping event as reference
+    const base = longerOverlapping.reduce((a, b) =>
+      getDuration(a) >= getDuration(b) ? a : b
+    )
+    const sameStart = Math.abs(getStartMs(event) - getStartMs(base)) <= SAME_START_MS
+
+    return {
+      event,
+      leftPct: sameStart ? 50 : 20,
+      widthPct: sameStart ? 50 : 80,
+      zIndex: longerOverlapping.length + 1,
+    }
+  })
 }
 
 // ── Mini Calendar ─────────────────────────────────────────────────────────────
@@ -372,20 +399,21 @@ function CalendarList({
 
 function EventBlock({
   event,
-  col,
-  cols,
+  leftPct,
+  widthPct,
+  zIndex,
   calendarBg,
 }: {
   event: CalendarEvent
-  col: number
-  cols: number
+  leftPct: number
+  widthPct: number
+  zIndex: number
   calendarBg?: string
 }) {
   const color = eventColor(event.colorId, calendarBg)
   const top = eventTopPx(event)
   const height = eventHeightPx(event)
-  const widthPct = 100 / cols
-  const leftPct = col * widthPct
+  const pending = event.selfResponseStatus === 'needsAction' || event.selfResponseStatus === 'tentative'
 
   const startLabel = event.start.dateTime
     ? format(parseISO(event.start.dateTime), "HH:mm")
@@ -405,8 +433,10 @@ function EventBlock({
         height: `${height}px`,
         left: `calc(${leftPct}% + 1px)`,
         width: `calc(${widthPct}% - 2px)`,
-        backgroundColor: color.bg,
-        borderLeft: `3px solid ${color.border}`,
+        zIndex,
+        backgroundColor: pending ? 'transparent' : color.bg,
+        border: pending ? `2px dashed ${color.border}` : undefined,
+        borderLeft: pending ? `2px dashed ${color.border}` : `3px solid ${color.border}`,
         color: color.text,
       }}
       title={`${event.summary}\n${startLabel}–${endLabel}${event.location ? `\n${event.location}` : ""}`}
@@ -761,13 +791,14 @@ export function ScheduleClient() {
                         </div>
                       )}
 
-                      {laid.map((event) => (
+                      {laid.map((item) => (
                         <EventBlock
-                          key={event.id}
-                          event={event}
-                          col={event.col}
-                          cols={event.cols}
-                          calendarBg={calendarColorMap.get(event.calendarId)}
+                          key={item.event.id}
+                          event={item.event}
+                          leftPct={item.leftPct}
+                          widthPct={item.widthPct}
+                          zIndex={item.zIndex}
+                          calendarBg={calendarColorMap.get(item.event.calendarId)}
                         />
                       ))}
                     </div>

@@ -11,6 +11,7 @@ interface GoogleCalendarEventRaw {
   end?: { dateTime?: string; date?: string; timeZone?: string }
   colorId?: string
   htmlLink?: string
+  attendees?: Array<{ self?: boolean; responseStatus?: string }>
 }
 
 async function fetchCalendarEvents(
@@ -46,6 +47,7 @@ async function fetchCalendarEvents(
     colorId: item.colorId ?? null,
     htmlLink: item.htmlLink ?? null,
     allDay: Boolean(item.start?.date && !item.start?.dateTime),
+    selfResponseStatus: item.attendees?.find((a) => a.self)?.responseStatus ?? 'accepted',
     calendarId,
   }))
 }
