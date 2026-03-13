@@ -11,7 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@workspace/ui/components/dropdown-menu'
-import { Delete01Icon, MoreVerticalIcon, PencilEdit01Icon } from '@/components/icons'
+import { Delete01Icon, LinkForwardIcon, MoreVerticalIcon, PencilEdit01Icon } from '@/components/icons'
 import { cn } from '@workspace/ui/lib/utils'
 import { TaskEditModal } from './task-edit-modal'
 import type { Column, ColumnOption, Task } from '../../../lib/types'
@@ -120,6 +120,18 @@ export function KanbanCard({
                 <PencilEdit01Icon className="h-3.5 w-3.5 shrink-0" />
                 Edit task
               </DropdownMenuItem>
+              {columns
+                .filter((c) => c.type === 'url' && task.values[c.id])
+                .map((c) => (
+                  <DropdownMenuItem
+                    key={c.id}
+                    className="gap-2 whitespace-nowrap text-muted-foreground"
+                    onSelect={() => window.open(task.values[c.id] as string, '_blank', 'noopener,noreferrer')}
+                  >
+                    <LinkForwardIcon className="h-3.5 w-3.5 shrink-0" />
+                    {c.name}
+                  </DropdownMenuItem>
+                ))}
               <DropdownMenuItem
                 className="gap-2 whitespace-nowrap text-destructive focus:text-destructive"
                 onSelect={onDelete}
