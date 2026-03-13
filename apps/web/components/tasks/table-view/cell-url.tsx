@@ -1,7 +1,7 @@
-'use client'
+"use client"
 
-import { useState, useRef } from 'react'
-import { Link01Icon } from '@/components/icons'
+import { useState, useRef } from "react"
+import { LinkForwardIcon } from "@/components/icons"
 
 interface CellUrlProps {
   value: string | null
@@ -10,11 +10,11 @@ interface CellUrlProps {
 
 export function CellUrl({ value, onChange }: CellUrlProps) {
   const [editing, setEditing] = useState(false)
-  const [draft, setDraft] = useState('')
+  const [draft, setDraft] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
 
   function startEdit() {
-    setDraft(value ?? '')
+    setDraft(value ?? "")
     setEditing(true)
     setTimeout(() => inputRef.current?.focus(), 0)
   }
@@ -35,8 +35,8 @@ export function CellUrl({ value, onChange }: CellUrlProps) {
           onChange={(e) => setDraft(e.target.value)}
           onBlur={commit}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') commit()
-            if (e.key === 'Escape') setEditing(false)
+            if (e.key === "Enter") commit()
+            if (e.key === "Escape") setEditing(false)
           }}
           placeholder="https://..."
           className="h-7 w-full rounded border border-border bg-background px-2 text-sm outline-none focus:border-ring focus:ring-1 focus:ring-ring"
@@ -65,7 +65,7 @@ export function CellUrl({ value, onChange }: CellUrlProps) {
         onClick={(e) => e.stopPropagation()}
         className="flex items-center gap-1.5 rounded border border-border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:bg-primary/5 hover:text-primary"
       >
-        <Link01Icon className="h-3 w-3 shrink-0" />
+        <LinkForwardIcon className="h-3 w-3 shrink-0" />
         Go to link
       </a>
       <button
