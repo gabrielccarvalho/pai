@@ -44,6 +44,7 @@ import {
   Tick02Icon as Tick02IconData,
   UserIcon as UserIconData,
   MoreVerticalIcon as MoreVerticalIconData,
+  Cancel01Icon as CancelIconData,
 } from "@hugeicons/core-free-icons"
 
 type IconProps = Omit<HugeiconsIconProps, "icon">
@@ -161,4 +162,7 @@ export const MoreVerticalIcon = (p: IconProps) => (
 )
 export const LinkForwardIcon = (p: IconProps) => (
   <HugeiconsIcon icon={LinkForwardIconData} {...p} />
+)
+export const CancelIcon = (p: IconProps) => (
+  <HugeiconsIcon icon={CancelIconData} {...p} />
 )

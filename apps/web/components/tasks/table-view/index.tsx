@@ -42,6 +42,7 @@ import {
 } from "@workspace/ui/components/popover"
 import {
   Add01Icon,
+  CancelIcon,
   Delete01Icon,
   FilterIcon,
   MoreVerticalIcon,
@@ -61,6 +62,7 @@ import { AddColumnDialog } from "./add-column-dialog"
 import { SortableColumnHead } from "./sortable-column-head"
 import { getStatusColumn, getDoneOption } from "../../../lib/task-utils"
 import type { Column, ColumnType, Task, TaskBoard } from "../../../lib/types"
+import { Cancel01Icon } from "@hugeicons/core-free-icons"
 
 const DEFAULT_COL_WIDTH = 180
 const TITLE_COL_WIDTH = 280
@@ -108,7 +110,6 @@ interface TableViewProps {
   onCreateOption: (columnId: string, label: string) => Promise<void>
   onUpdateOption: (optionId: string, color: string | null) => Promise<void>
 }
-
 
 export function TableView({
   board,
@@ -275,7 +276,7 @@ export function TableView({
                   {isDone ? (
                     <DropdownMenuItem
                       disabled
-                      className="cursor-default gap-2 whitespace-nowrap bg-emerald-200/20 text-emerald-500 opacity-100 focus:bg-emerald-200/20 focus:text-emerald-500"
+                      className="cursor-default gap-2 bg-emerald-200/20 whitespace-nowrap text-emerald-500 opacity-100 focus:bg-emerald-200/20 focus:text-emerald-500"
                     >
                       <Tick02Icon className="h-3.5 w-3.5 shrink-0" />
                       Already Done
@@ -383,7 +384,7 @@ export function TableView({
           <PopoverTrigger asChild>
             <button
               className={cn(
-                "flex h-8 items-center gap-1.5 rounded-md border border-border px-3 text-sm transition-colors hover:bg-muted",
+                "flex h-8 cursor-pointer items-center gap-1.5 rounded-md border border-border px-3 text-sm transition-colors hover:bg-muted",
                 activeFilterCount > 0
                   ? "bg-muted text-foreground"
                   : "text-muted-foreground hover:text-foreground"
@@ -392,7 +393,7 @@ export function TableView({
               <FilterIcon className="h-3.5 w-3.5" />
               Filter
               {activeFilterCount > 0 && (
-                <span className="ml-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
+                <span className="ml-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary/15 text-[10px] font-bold text-primary">
                   {filterChips.length}
                 </span>
               )}
@@ -473,7 +474,7 @@ export function TableView({
         {filterChips.map(({ colId, optId, label, color }) => (
           <span
             key={`${colId}-${optId}`}
-            className="flex h-8 items-center gap-1.5 rounded-md border border-dashed border-border px-3 text-sm text-muted-foreground"
+            className="flex h-8 items-center gap-1.5 rounded-md border border-dashed border-border px-3 text-sm text-muted-foreground select-none"
           >
             {color && (
               <span
@@ -487,15 +488,7 @@ export function TableView({
               className="ml-0.5 flex h-3.5 w-3.5 items-center justify-center rounded text-muted-foreground transition-colors hover:text-foreground"
               title="Remove filter"
             >
-              <svg
-                viewBox="0 0 12 12"
-                className="h-2.5 w-2.5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M2 2l8 8M10 2l-8 8" />
-              </svg>
+              <CancelIcon className="h-3.5 w-3.5 transition-all duration-500 hover:rotate-90 hover:cursor-pointer" />
             </button>
           </span>
         ))}
