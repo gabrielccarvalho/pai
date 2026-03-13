@@ -8,6 +8,7 @@ import {
   SettingsIcon,
   UserCircleIcon,
 } from "@hugeicons/core-free-icons"
+import { signOut } from "next-auth/react"
 
 import {
   Avatar,
@@ -95,7 +96,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => signOut()}>
               <HugeiconsIcon icon={Logout01Icon} strokeWidth={2} />
               Log out
             </DropdownMenuItem>

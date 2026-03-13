@@ -11,9 +11,10 @@ interface CellProps {
   task: Task
   onUpdate: (values: Record<string, unknown>) => void
   onCreateOption?: (columnId: string, label: string) => Promise<void>
+  onUpdateOption?: (optionId: string, color: string | null) => Promise<void>
 }
 
-export function Cell({ column, task, onUpdate, onCreateOption }: CellProps) {
+export function Cell({ column, task, onUpdate, onCreateOption, onUpdateOption }: CellProps) {
   const value = task.values[column.id]
 
   function update(newValue: unknown) {
@@ -55,6 +56,7 @@ export function Cell({ column, task, onUpdate, onCreateOption }: CellProps) {
                 }
               : undefined
           }
+          onUpdateOption={onUpdateOption}
         />
       )
 
@@ -75,6 +77,7 @@ export function Cell({ column, task, onUpdate, onCreateOption }: CellProps) {
                 }
               : undefined
           }
+          onUpdateOption={onUpdateOption}
         />
       )
 

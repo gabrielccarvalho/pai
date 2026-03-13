@@ -1,7 +1,7 @@
-'use client'
+"use client"
 
-import { useState, useRef, useEffect } from 'react'
-import { cn } from '@workspace/ui/lib/utils'
+import { useState, useRef, useEffect } from "react"
+import { cn } from "@workspace/ui/lib/utils"
 
 interface CellTextProps {
   value: string
@@ -31,12 +31,12 @@ export function CellText({ value, onChange, placeholder }: CellTextProps) {
     return (
       <div
         className={cn(
-          'h-full w-full cursor-text truncate px-3 py-2 text-sm',
-          !value && 'text-muted-foreground',
+          "min-h-9 w-full cursor-text truncate px-3 py-2 text-sm",
+          !value && "text-muted-foreground"
         )}
         onClick={() => setEditing(true)}
       >
-        {value || placeholder || ''}
+        {value || placeholder || ""}
       </div>
     )
   }
@@ -44,13 +44,13 @@ export function CellText({ value, onChange, placeholder }: CellTextProps) {
   return (
     <input
       ref={inputRef}
-      className="h-full w-full bg-transparent px-3 py-2 text-sm outline-none ring-1 ring-inset ring-primary/50"
+      className="h-9 w-full bg-transparent px-3 py-2 text-sm ring-1 ring-primary/50 outline-none ring-inset"
       value={draft}
       onChange={(e) => setDraft(e.target.value)}
       onBlur={commit}
       onKeyDown={(e) => {
-        if (e.key === 'Enter') commit()
-        if (e.key === 'Escape') {
+        if (e.key === "Enter") commit()
+        if (e.key === "Escape") {
           setDraft(value)
           setEditing(false)
         }

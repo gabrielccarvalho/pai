@@ -1,7 +1,14 @@
 "use client"
 
+import { usePathname } from "next/navigation"
+import Link from "next/link"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Home01Icon, Briefcase01Icon } from "@hugeicons/core-free-icons"
+import {
+  CheckListIcon,
+  Calendar03Icon,
+  BubbleChatIcon,
+  TaskDaily01Icon,
+} from "@hugeicons/core-free-icons"
 
 import {
   Sidebar,
@@ -9,6 +16,7 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -16,19 +24,21 @@ import {
   SidebarRail,
 } from "@workspace/ui/components/sidebar"
 import { NavUser } from "@/components/nav-user"
-import Link from "next/link"
 
 const navItems = [
-  { title: "Home", icon: Home01Icon, href: "/" },
-  { title: "Work", icon: Briefcase01Icon, href: "/work" },
+  { title: "Chat", icon: BubbleChatIcon, href: "/chat" },
+  { title: "Tasks", icon: CheckListIcon, href: "/tasks" },
+  { title: "Schedule", icon: Calendar03Icon, href: "/schedule" },
+  { title: "Todo", icon: TaskDaily01Icon, href: "/todo" },
 ]
 
-const user = {
-  name: "Gabe",
-  email: "gabe@example.com",
-}
+export function AppSidebar({
+  user,
+}: {
+  user: { name: string; email: string; image?: string | null }
+}) {
+  const pathname = usePathname()
 
-export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -59,15 +69,20 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
+          <SidebarGroupLabel>Workspace</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild tooltip={item.title}>
-                    <a href={item.href}>
+                  <SidebarMenuButton
+                    asChild
+                    tooltip={item.title}
+                    isActive={pathname.startsWith(item.href)}
+                  >
+                    <Link href={item.href}>
                       <HugeiconsIcon icon={item.icon} strokeWidth={2} />
                       <span>{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -77,7 +92,7 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
-        <NavUser user={user} />
+        <NavUser user={{ name: user.name ?? "", email: user.email, avatar: user.image ?? undefined }} />
       </SidebarFooter>
 
       <SidebarRail />

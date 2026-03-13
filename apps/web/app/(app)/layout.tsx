@@ -1,10 +1,18 @@
-import { Sidebar } from '@/components/sidebar'
+import { cookies } from 'next/headers'
+import { auth } from '@/auth'
+import { AppSidebar } from '@/components/app-sidebar'
+import { SidebarProvider, SidebarInset } from '@workspace/ui/components/sidebar'
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const [cookieStore, session] = await Promise.all([cookies(), auth()])
+  const sidebarState = cookieStore.get('sidebar_state')?.value
+  const defaultSidebarOpen = sidebarState !== 'false'
+  const user = session?.user ?? { name: '', email: '' }
+
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
-      <main className="flex-1 pl-56 overflow-auto">{children}</main>
-    </div>
+    <SidebarProvider defaultOpen={defaultSidebarOpen}>
+      <AppSidebar user={user} />
+      <SidebarInset>{children}</SidebarInset>
+    </SidebarProvider>
   )
 }

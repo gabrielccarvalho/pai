@@ -4,6 +4,21 @@ import { prisma } from '../../../../../lib/prisma'
 
 type Params = { params: Promise<{ id: string }> }
 
+export async function PATCH(req: Request, { params }: Params) {
+  const session = await auth()
+  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { id: boardId } = await params
+  const board = await prisma.taskBoard.findFirst({ where: { id: boardId, userId: session.user.id } })
+  if (!board) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+  const { order }: { order: { id: string; order: number }[] } = await req.json()
+  await Promise.all(
+    order.map(({ id, order }) => prisma.column.update({ where: { id, boardId }, data: { order } })),
+  )
+  return NextResponse.json({ success: true })
+}
+
 export async function POST(req: Request, { params }: Params) {
   const session = await auth()
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

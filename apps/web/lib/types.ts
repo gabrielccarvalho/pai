@@ -20,6 +20,8 @@ export interface Column {
   name: string
   type: ColumnType
   order: number
+  icon: string | null
+  width: number | null
   boardId: string
   options: ColumnOption[]
 }

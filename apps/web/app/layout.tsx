@@ -1,5 +1,4 @@
 import type { Metadata } from "next"
-import { cookies } from "next/headers"
 import { Geist_Mono, Figtree } from "next/font/google"
 
 export const metadata: Metadata = {
@@ -9,11 +8,9 @@ export const metadata: Metadata = {
 
 import "@workspace/ui/globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import { AppSidebar } from "@/components/app-sidebar"
 import { cn } from "@workspace/ui/lib/utils"
 import { TooltipProvider } from "@workspace/ui/components/tooltip"
 import { Toaster } from "@workspace/ui/components/sonner"
-import { SidebarProvider, SidebarInset } from "@workspace/ui/components/sidebar"
 
 const figtree = Figtree({ subsets: ["latin"], variable: "--font-sans" })
 
@@ -22,15 +19,11 @@ const fontMono = Geist_Mono({
   variable: "--font-mono",
 })
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const cookieStore = await cookies()
-  const sidebarState = cookieStore.get("sidebar_state")?.value
-  const defaultSidebarOpen = sidebarState !== "false"
-
   return (
     <html
       lang="en"
@@ -45,13 +38,8 @@ export default async function RootLayout({
       <body>
         <ThemeProvider>
           <TooltipProvider>
-            <SidebarProvider defaultOpen={defaultSidebarOpen}>
-              <AppSidebar />
-              <SidebarInset>
-                <Toaster />
-                {children}
-              </SidebarInset>
-            </SidebarProvider>
+            <Toaster />
+            {children}
           </TooltipProvider>
         </ThemeProvider>
       </body>
