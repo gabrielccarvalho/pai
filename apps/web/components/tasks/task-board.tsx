@@ -15,10 +15,12 @@ interface TaskBoardProps {
 
 export function TaskBoardClient({ initialBoard }: TaskBoardProps) {
   const [board, setBoard] = useState<TaskBoard>(initialBoard)
-  const [view, setView] = useState<TaskView>(() => {
-    if (typeof window === "undefined") return "table"
-    return (localStorage.getItem(VIEW_STORAGE_KEY) as TaskView) ?? "table"
-  })
+  const [view, setView] = useState<TaskView>("table")
+
+  useEffect(() => {
+    const stored = localStorage.getItem(VIEW_STORAGE_KEY) as TaskView | null
+    if (stored) setView(stored)
+  }, [])
 
   useEffect(() => {
     localStorage.setItem(VIEW_STORAGE_KEY, view)

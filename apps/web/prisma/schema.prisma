@@ -20,6 +20,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   boards        TaskBoard[]
+  todos         Todo[]
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 }
@@ -100,6 +101,28 @@ model Task {
   board     TaskBoard @relation(fields: [boardId], references: [id], onDelete: Cascade)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+}
+
+// ─── Todos ────────────────────────────────────────────────────────────────────
+
+model Todo {
+  id              String    @id @default(cuid())
+  title           String
+  description     String?
+  completed       Boolean   @default(false)
+  dueDate         DateTime?
+  progress        Int?
+  eventId         String?
+  eventCalendarId String?
+  eventSummary    String?
+  order           Int       @default(0)
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentId        String?
+  parent          Todo?     @relation("SubTodos", fields: [parentId], references: [id], onDelete: Cascade)
+  subTodos        Todo[]    @relation("SubTodos")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }
 
 enum ColumnType {

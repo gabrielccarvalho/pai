@@ -1,17 +1,20 @@
 import { Metadata } from "next"
+import { auth } from "../../../auth"
+import { redirect } from "next/navigation"
+import { TodoClient } from "../../../components/todo/todo-client"
 
 export const metadata: Metadata = {
   title: "pai | To-Do List",
   description: "Manage your to-dos.",
 }
 
-export default function TodoPage() {
+export default async function TodoPage() {
+  const session = await auth()
+  if (!session?.user?.id) redirect("/sign-in")
+
   return (
-    <div className="flex h-full min-h-screen items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-2xl font-semibold">To-do</h1>
-        <p className="mt-2 text-muted-foreground">Coming soon</p>
-      </div>
+    <div className="flex h-full flex-col">
+      <TodoClient />
     </div>
   )
 }

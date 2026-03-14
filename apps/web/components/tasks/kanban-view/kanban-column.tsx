@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useDroppable } from '@dnd-kit/core'
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { Add01Icon } from '@/components/icons'
 import { KanbanCard } from './kanban-card'
 import { TaskEditModal } from './task-edit-modal'
@@ -61,22 +62,23 @@ export function KanbanColumn({
       <div
         ref={setNodeRef}
         className={cn(
-          "flex flex-col gap-2 rounded-lg min-h-[48px] transition-colors",
-          isOver && "bg-muted/50 ring-1 ring-border"
+          "flex flex-col gap-2 rounded-lg min-h-[48px] transition-colors p-0.5",
+          isOver && activeTaskId && !tasks.some((t) => t.id === activeTaskId) && "bg-muted/40"
         )}
       >
-        {tasks.map((task) => (
-          <KanbanCard
-            key={task.id}
-            task={task}
-            columns={columns}
-            onDelete={() => onDeleteTask(task.id)}
-            onUpdateTask={onUpdateTask}
-            onCreateOption={onCreateOption}
-            onUpdateOption={onUpdateOption}
-            isDragging={task.id === activeTaskId}
-          />
-        ))}
+        <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+          {tasks.map((task) => (
+            <KanbanCard
+              key={task.id}
+              task={task}
+              columns={columns}
+              onDelete={() => onDeleteTask(task.id)}
+              onUpdateTask={onUpdateTask}
+              onCreateOption={onCreateOption}
+              onUpdateOption={onUpdateOption}
+            />
+          ))}
+        </SortableContext>
       </div>
 
       {/* Add task */}
@@ -94,7 +96,6 @@ export function KanbanColumn({
           open
           onOpenChange={(open) => { if (!open) setPendingEditTask(null) }}
           task={
-            // Use latest task data from tasks list if available, else fall back to pending
             tasks.find((t) => t.id === pendingEditTask.id) ?? pendingEditTask
           }
           columns={columns}

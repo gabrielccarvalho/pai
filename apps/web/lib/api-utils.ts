@@ -39,7 +39,7 @@ type OrderedDelegate = {
 }
 
 export async function nextOrder(
-  model: "task" | "column" | "columnOption",
+  model: "task" | "column" | "columnOption" | "todo",
   where: Record<string, unknown>
 ): Promise<number> {
   const delegate = prisma[model] as unknown as OrderedDelegate

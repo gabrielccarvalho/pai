@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import confetti from 'canvas-confetti'
 import { Popover, PopoverContent, PopoverTrigger } from '@workspace/ui/components/popover'
 import { Badge } from '@workspace/ui/components/badge'
 import { Input } from '@workspace/ui/components/input'
@@ -34,6 +35,7 @@ interface CellSelectProps {
   multi?: boolean
   multiValue?: string[]
   onMultiChange?: (values: string[]) => void
+  doneOptionId?: string
 }
 
 export function CellSelect({
@@ -45,6 +47,7 @@ export function CellSelect({
   multi,
   multiValue,
   onMultiChange,
+  doneOptionId,
 }: CellSelectProps) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
@@ -163,10 +166,23 @@ export function CellSelect({
                   {/* Label — click to select/deselect */}
                   <button
                     className="flex flex-1 items-center gap-2 text-left"
-                    onClick={() => {
+                    onClick={(e) => {
                       if (multi) {
                         toggleMulti(o.id)
                       } else {
+                        if (!isSelected && doneOptionId && o.id === doneOptionId) {
+                          confetti({
+                            particleCount: 60,
+                            spread: 70,
+                            origin: {
+                              x: e.clientX / window.innerWidth,
+                              y: e.clientY / window.innerHeight,
+                            },
+                            startVelocity: 20,
+                            gravity: 1.2,
+                            scalar: 0.8,
+                          })
+                        }
                         onChange(isSelected ? null : o.id)
                         setOpen(false)
                       }

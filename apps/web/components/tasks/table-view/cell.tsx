@@ -6,6 +6,7 @@ import { CellNumber } from './cell-number'
 import { CellSelect } from './cell-select'
 import { CellDate } from './cell-date'
 import { CellUrl } from './cell-url'
+import { getDoneOption } from '../../../lib/task-utils'
 
 interface CellProps {
   column: Column
@@ -50,6 +51,7 @@ export function Cell({ column, task, onUpdate, onCreateOption, onUpdateOption, m
           value={(value as string) ?? null}
           options={column.options}
           onChange={update}
+          doneOptionId={getDoneOption(column)?.id}
           onCreateOption={
             onCreateOption
               ? async (label) => {

@@ -36,6 +36,23 @@ export interface Task {
   updatedAt: string
 }
 
+export interface Todo {
+  id: string
+  title: string
+  description: string | null
+  completed: boolean
+  dueDate: string | null
+  progress: number | null
+  eventId: string | null
+  eventCalendarId: string | null
+  eventSummary: string | null
+  order: number
+  parentId: string | null
+  subTodos: Todo[]
+  createdAt: string
+  updatedAt: string
+}
+
 export interface TaskBoard {
   id: string
   name: string

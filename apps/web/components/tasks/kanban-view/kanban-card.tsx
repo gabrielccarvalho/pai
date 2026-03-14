@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { useDraggable } from "@dnd-kit/core"
+import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { format, parseISO } from "date-fns"
 import { Badge } from "@workspace/ui/components/badge"
@@ -43,7 +43,6 @@ interface KanbanCardProps {
   ) => Promise<void>
   onCreateOption?: (columnId: string, label: string) => Promise<void>
   onUpdateOption?: (optionId: string, color: string | null) => Promise<void>
-  isDragging?: boolean
   isDragOverlay?: boolean
 }
 
@@ -54,17 +53,34 @@ export function KanbanCard({
   onUpdateTask,
   onCreateOption,
   onUpdateOption,
-  isDragging,
   isDragOverlay,
 }: KanbanCardProps) {
   const [editOpen, setEditOpen] = useState(false)
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
-    id: task.id,
-  })
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: task.id })
 
   const style = isDragOverlay
-    ? { transform: CSS.Translate.toString(transform) }
-    : undefined
+    ? undefined
+    : { transform: CSS.Transform.toString(transform), transition }
+
+  // Render dashed placeholder at the sorted position while dragging
+  if (isDragging && !isDragOverlay) {
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        {...listeners}
+        className="min-h-[60px] rounded-lg border-2 border-dashed border-border bg-muted/20 opacity-50"
+      />
+    )
+  }
 
   const title = getTitleValue(task, columns)
 
@@ -101,10 +117,8 @@ export function KanbanCard({
           if (!isDragOverlay) setEditOpen(true)
         }}
         className={cn(
-          "group relative cursor-pointer rounded-lg border border-border bg-card p-3 shadow-sm transition-shadow active:cursor-grabbing",
-          isDragging && "opacity-30",
-          isDragOverlay && "rotate-1 shadow-lg",
-          !isDragging && !isDragOverlay && "hover:shadow-md"
+          "group relative cursor-grab rounded-lg border border-border bg-card p-3 shadow-sm transition-shadow hover:shadow-md",
+          isDragOverlay && "rotate-1 shadow-lg cursor-grabbing",
         )}
       >
         {/* Three-dot menu */}
