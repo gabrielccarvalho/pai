@@ -16,15 +16,17 @@ interface TaskBoardProps {
 export function TaskBoardClient({ initialBoard }: TaskBoardProps) {
   const [board, setBoard] = useState<TaskBoard>(initialBoard)
   const [view, setView] = useState<TaskView>("table")
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    const stored = localStorage.getItem(VIEW_STORAGE_KEY) as TaskView | null
+    const stored = sessionStorage.getItem(VIEW_STORAGE_KEY) as TaskView | null
     if (stored) setView(stored)
+    setMounted(true)
   }, [])
 
   useEffect(() => {
-    localStorage.setItem(VIEW_STORAGE_KEY, view)
-  }, [view])
+    if (mounted) sessionStorage.setItem(VIEW_STORAGE_KEY, view)
+  }, [view, mounted])
 
   // Re-fetch the full board (to get fresh options after creates)
   const refetch = useCallback(async () => {
@@ -184,7 +186,7 @@ export function TaskBoardClient({ initialBoard }: TaskBoardProps) {
 
       {/* Content */}
       <div className="flex-1 overflow-auto">
-        {view === "table" ? (
+        {!mounted ? null : view === "table" ? (
           <TableView
             board={board}
             onAddTask={() => handleAddTask()}

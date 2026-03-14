@@ -60,3 +60,23 @@ export interface TaskBoard {
   columns: Column[]
   tasks: Task[]
 }
+
+export interface CalendarEventTime {
+  dateTime?: string
+  date?: string
+  timeZone?: string
+}
+
+export interface CalendarEvent {
+  id: string
+  summary: string
+  description: string | null
+  location: string | null
+  start: CalendarEventTime
+  end: CalendarEventTime
+  colorId: string | null
+  htmlLink: string | null
+  allDay: boolean
+  selfResponseStatus: string
+  calendarId: string
+}

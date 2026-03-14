@@ -6,8 +6,8 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import {
   CheckListIcon,
   Calendar03Icon,
-  BubbleChatIcon,
   TaskDaily01Icon,
+  DashboardSquare02Icon,
 } from "@hugeicons/core-free-icons"
 
 import {
@@ -26,7 +26,7 @@ import {
 import { NavUser } from "@/components/nav-user"
 
 const navItems = [
-  { title: "Chat", icon: BubbleChatIcon, href: "/chat" },
+  { title: "Dashboard", icon: DashboardSquare02Icon, href: "/dashboard" },
   { title: "Tasks", icon: CheckListIcon, href: "/tasks" },
   { title: "Schedule", icon: Calendar03Icon, href: "/schedule" },
   { title: "Todo", icon: TaskDaily01Icon, href: "/todo" },
