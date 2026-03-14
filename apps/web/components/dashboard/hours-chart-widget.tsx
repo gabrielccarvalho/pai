@@ -9,6 +9,7 @@ import {
   YAxis,
   CartesianGrid,
   Cell,
+  ReferenceLine,
 } from "recharts"
 import {
   ChartContainer,
@@ -16,10 +17,19 @@ import {
   type ChartConfig,
 } from "@workspace/ui/components/chart"
 import { Clock01Icon } from "../../components/icons"
-import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/card"
 import { Button } from "@workspace/ui/components/button"
 import { Calendar } from "@workspace/ui/components/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@workspace/ui/components/popover"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@workspace/ui/components/popover"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Calendar03Icon } from "@hugeicons/core-free-icons"
 import {
@@ -123,7 +133,9 @@ function TaskBadges({ task, badgeCols }: { task: Task; badgeCols: Column[] }) {
         return (
           <span key={i} className="flex items-center gap-1">
             {i > 0 && (
-              <span className="text-muted-foreground/40 text-xs select-none">•</span>
+              <span className="text-xs text-muted-foreground/40 select-none">
+                •
+              </span>
             )}
             <span
               className="inline-flex shrink-0 items-center rounded px-1.5 py-0.5 text-xs font-medium"
@@ -165,7 +177,10 @@ export function HoursChartWidget({ board }: { board: TaskBoard }) {
 
   // Column detection
   const companyColumn = useMemo(
-    () => board.columns.find((c) => c.type === "select" || c.type === "multiselect"),
+    () =>
+      board.columns.find(
+        (c) => c.type === "select" || c.type === "multiselect"
+      ),
     [board.columns]
   ) as Column | undefined
 
@@ -180,13 +195,18 @@ export function HoursChartWidget({ board }: { board: TaskBoard }) {
   ) as Column | undefined
 
   const badgeColumns = useMemo(
-    () => (companyColumn ? findBadgeColumns(board.columns, companyColumn.id) : []),
+    () =>
+      companyColumn ? findBadgeColumns(board.columns, companyColumn.id) : [],
     [board.columns, companyColumn]
   )
 
   // Filter tasks to the selected range
   const rangeStart = range.from ? startOfDay(range.from) : null
-  const rangeEnd = range.to ? endOfDay(range.to) : range.from ? endOfDay(range.from) : null
+  const rangeEnd = range.to
+    ? endOfDay(range.to)
+    : range.from
+      ? endOfDay(range.from)
+      : null
 
   const weekTasks = useMemo(() => {
     if (!rangeStart || !rangeEnd) return board.tasks
@@ -195,7 +215,11 @@ export function HoursChartWidget({ board }: { board: TaskBoard }) {
       if (dateColumn) {
         const val = task.values[dateColumn.id]
         if (typeof val === "string" && val) {
-          try { taskDate = parseISO(val) } catch { taskDate = null }
+          try {
+            taskDate = parseISO(val)
+          } catch {
+            taskDate = null
+          }
         }
       }
       if (!taskDate) taskDate = new Date(task.updatedAt)
@@ -213,7 +237,9 @@ export function HoursChartWidget({ board }: { board: TaskBoard }) {
       const companyVal = task.values[companyColumn.id]
       const hours = getTaskHours(task, hoursColumn.id)
       if (!companyVal || hours === 0) continue
-      const ids = Array.isArray(companyVal) ? companyVal.map(String) : [String(companyVal)]
+      const ids = Array.isArray(companyVal)
+        ? companyVal.map(String)
+        : [String(companyVal)]
       for (const id of ids) {
         if (id in totals) totals[id] = (totals[id] ?? 0) + hours
       }
@@ -246,14 +272,19 @@ export function HoursChartWidget({ board }: { board: TaskBoard }) {
         const ids = Array.isArray(val) ? val.map(String) : [String(val)]
         return ids.includes(resolvedActive)
       })
-      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+      .sort(
+        (a, b) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      )
       .slice(0, 3)
   }, [resolvedActive, companyColumn, weekTasks])
 
   const maxHours = Math.max(...chartData.map((d) => d.hours), 0)
   const yMax = Math.max(40, Math.ceil(maxHours / 10) * 10)
   const chartConfig: ChartConfig = { hours: { label: "Hours" } }
-  const activeOption = companyColumn?.options.find((o) => o.id === resolvedActive)
+  const activeOption = companyColumn?.options.find(
+    (o) => o.id === resolvedActive
+  )
 
   if (!companyColumn || !hoursColumn) {
     return (
@@ -265,9 +296,15 @@ export function HoursChartWidget({ board }: { board: TaskBoard }) {
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <p className="text-sm text-muted-foreground">
               Add a <span className="font-medium">select</span> column and a{" "}
-              <span className="font-medium">hours</span> column to your task board to see this chart.
+              <span className="font-medium">hours</span> column to your task
+              board to see this chart.
             </p>
-            <Button asChild variant="ghost" size="sm" className="mt-3 text-xs text-primary">
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="mt-3 text-xs text-primary"
+            >
               <Link href="/tasks">Go to Tasks →</Link>
             </Button>
           </div>
@@ -290,7 +327,11 @@ export function HoursChartWidget({ board }: { board: TaskBoard }) {
                 size="sm"
                 className="h-7 gap-1.5 border-border/60 px-2.5 text-xs font-normal text-muted-foreground"
               >
-                <HugeiconsIcon icon={Calendar03Icon} className="size-3.5" strokeWidth={2} />
+                <HugeiconsIcon
+                  icon={Calendar03Icon}
+                  className="size-3.5"
+                  strokeWidth={2}
+                />
                 {formatRangeLabel(range)}
               </Button>
             </PopoverTrigger>
@@ -320,13 +361,26 @@ export function HoursChartWidget({ board }: { board: TaskBoard }) {
             margin={{ top: 4, right: 4, left: -20, bottom: 0 }}
             onClick={(data) => {
               if (data?.activePayload?.[0]) {
-                const clickedId = (data.activePayload[0].payload as { id: string }).id
-                setActiveCompany((prev) => (prev === clickedId ? null : clickedId))
+                const clickedId = (
+                  data.activePayload[0].payload as { id: string }
+                ).id
+                setActiveCompany((prev) =>
+                  prev === clickedId ? null : clickedId
+                )
               }
             }}
           >
-            <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border/40" />
-            <XAxis dataKey="name" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
+            <CartesianGrid
+              vertical={false}
+              strokeDasharray="3 3"
+              className="stroke-border/40"
+            />
+            <XAxis
+              dataKey="name"
+              tick={{ fontSize: 11 }}
+              tickLine={false}
+              axisLine={false}
+            />
             <YAxis
               domain={[0, yMax]}
               tick={{ fontSize: 11 }}
@@ -352,7 +406,10 @@ export function HoursChartWidget({ board }: { board: TaskBoard }) {
                       <span className="font-medium">{label}</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-muted-foreground">
-                      <Clock01Icon className="size-3 shrink-0" strokeWidth={2} />
+                      <Clock01Icon
+                        className="size-3 shrink-0"
+                        strokeWidth={2}
+                      />
                       <span className="font-mono font-medium text-foreground tabular-nums">
                         {formatHours(hours)}
                       </span>
@@ -361,21 +418,44 @@ export function HoursChartWidget({ board }: { board: TaskBoard }) {
                 )
               }}
             />
-            <Bar dataKey="hours" radius={[4, 4, 0, 0]} cursor="pointer" maxBarSize={48}>
+            <Bar
+              dataKey="hours"
+              radius={[4, 4, 0, 0]}
+              cursor="pointer"
+              maxBarSize={48}
+            >
               {chartData.map((entry) => (
                 <Cell
                   key={entry.id}
                   fill={entry.color}
-                  opacity={resolvedActive && resolvedActive !== entry.id ? 0.35 : 1}
+                  opacity={
+                    resolvedActive && resolvedActive !== entry.id ? 0.35 : 1
+                  }
                 />
               ))}
             </Bar>
+            <ReferenceLine
+              y={40}
+              stroke="var(--primary)"
+              strokeWidth={1}
+              strokeDasharray="4 3"
+              label={{
+                value: "40h",
+                position: "left",
+                fontSize: 11,
+                fill: "var(--primary)",
+                fontWeight: 600,
+              }}
+            />
           </BarChart>
         </ChartContainer>
 
         {/* Expanded tasks panel — fixed height always */}
         {resolvedActive && (
-          <div className="mt-4 rounded-lg border border-border/60 p-3" style={{ height: "152px" }}>
+          <div
+            className="mt-4 rounded-lg border border-border/60 p-3"
+            style={{ height: "152px" }}
+          >
             <p className="mb-2 text-xs font-medium text-muted-foreground">
               Recent tasks — {activeOption?.label}
             </p>
@@ -413,7 +493,12 @@ export function HoursChartWidget({ board }: { board: TaskBoard }) {
         )}
 
         <div className="mt-3 flex justify-end">
-          <Button asChild variant="ghost" size="sm" className="h-7 text-xs text-primary">
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="h-7 text-xs text-primary"
+          >
             <Link href="/tasks">Go to Tasks →</Link>
           </Button>
         </div>

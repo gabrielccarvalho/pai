@@ -121,42 +121,46 @@ export function TodoWidget({
         ) : (
           <>
             {/* Progress ring + stats */}
-            <div className="mb-3 flex shrink-0 items-center gap-4">
-              <div className="relative shrink-0">
-                <ProgressRing rate={completionRate} />
-                <span className="absolute inset-0 flex items-center justify-center text-sm font-bold">
-                  {completionRate}%
-                </span>
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">
-                  {completedCount} of {rootTodos.length} completed
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {overdueTodos.length > 0 && (
-                    <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">
-                      {overdueTodos.length} overdue
-                    </span>
-                  )}
-                  {dueTodayTodos.length > 0 && (
-                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                      {dueTodayTodos.length} due today
-                    </span>
-                  )}
-                  {allClear && rootTodos.length > 0 && (
-                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                      All caught up
-                    </span>
-                  )}
+            {rootTodos.length > 0 && (
+              <div className="mb-3 flex shrink-0 items-center gap-4">
+                <div className="relative shrink-0">
+                  <ProgressRing rate={completionRate} />
+                  <span className="absolute inset-0 flex items-center justify-center text-sm font-bold">
+                    {completionRate}%
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">
+                    {completedCount} of {rootTodos.length} completed
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {overdueTodos.length > 0 && (
+                      <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">
+                        {overdueTodos.length} overdue
+                      </span>
+                    )}
+                    {dueTodayTodos.length > 0 && (
+                      <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                        {dueTodayTodos.length} due today
+                      </span>
+                    )}
+                    {allClear && (
+                      <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                        All caught up
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Todo list */}
             <div className="min-h-0 flex-1">
               {rootTodos.length === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center text-center">
-                  <p className="text-sm text-muted-foreground">No todos yet.</p>
+                  <p className="text-sm text-muted-foreground">
+                    No to-dos today
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-1">
