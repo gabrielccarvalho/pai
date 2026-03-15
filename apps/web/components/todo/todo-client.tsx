@@ -19,8 +19,7 @@ import { TodoSection, type DateWindow, type SortOption } from "./todo-section"
 import { InlineAddTodo } from "./inline-add-todo"
 import { InlineEditTodo } from "./inline-edit-todo"
 import type { Todo } from "../../lib/types"
-
-const WINDOW_STORAGE_KEY = "pai:todo-window"
+import { useSettings } from "@/hooks/use-settings"
 
 function getDateBounds(w: DateWindow) {
   const today = startOfDay(new Date())
@@ -104,18 +103,12 @@ function groupByWeek(todos: Todo[], direction: "asc" | "desc" = "desc"): WeekGro
 }
 
 export function TodoClient() {
+  const { settings } = useSettings()
   const [todos, setTodos] = useState<Todo[]>([])
   const [loading, setLoading] = useState(true)
-  const [dateWindow, setDateWindow] = useState<DateWindow>(() => {
-    if (typeof window === "undefined") return "today"
-    return (localStorage.getItem(WINDOW_STORAGE_KEY) as DateWindow) ?? "today"
-  })
+  const [dateWindow, setDateWindow] = useState<DateWindow>(() => settings.todoDefaultWindow)
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
-  const [sortOption, setSortOption] = useState<SortOption>("due-asc")
-
-  useEffect(() => {
-    localStorage.setItem(WINDOW_STORAGE_KEY, dateWindow)
-  }, [dateWindow])
+  const [sortOption, setSortOption] = useState<SortOption>(() => settings.todoDefaultSort)
 
   const fetchTodos = useCallback(async () => {
     const res = await fetch("/api/todos")

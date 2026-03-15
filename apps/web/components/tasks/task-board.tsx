@@ -6,6 +6,7 @@ import { TableView } from "./table-view"
 import { KanbanView } from "./kanban-view"
 import { PageHeader } from "../page-header"
 import type { Column, ColumnType, TaskBoard } from "../../lib/types"
+import { useSettings } from "@/hooks/use-settings"
 
 const VIEW_STORAGE_KEY = "pai:task-view"
 
@@ -14,13 +15,12 @@ interface TaskBoardProps {
 }
 
 export function TaskBoardClient({ initialBoard }: TaskBoardProps) {
+  const { settings } = useSettings()
   const [board, setBoard] = useState<TaskBoard>(initialBoard)
-  const [view, setView] = useState<TaskView>("table")
+  const [view, setView] = useState<TaskView>(() => settings.taskDefaultView)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    const stored = sessionStorage.getItem(VIEW_STORAGE_KEY) as TaskView | null
-    if (stored) setView(stored)
     setMounted(true)
   }, [])
 

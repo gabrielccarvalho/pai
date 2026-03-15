@@ -31,6 +31,7 @@ import { PageHeader } from "../page-header"
 import { Button } from "@workspace/ui/components/button"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons"
+import { useSettings } from "@/hooks/use-settings"
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -61,14 +62,6 @@ interface GoogleCalendar {
   foregroundColor: string
   selected: boolean
   primary: boolean
-}
-
-// ── Config ────────────────────────────────────────────────────────────────────
-
-const CALENDAR_CONFIG = {
-  weekStartsOn: 0 as 0 | 1 | 2 | 3 | 4 | 5 | 6, // 0 = Sunday
-  dayScrollStartHour: 6, // scroll to 6am on initial load
-  eventRefreshIntervalMinutes: 5, // background refresh interval
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -172,9 +165,9 @@ function currentTimePx(): number {
   )
 }
 
-function weekKey(date: Date): string {
+function weekKey(date: Date, weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6): string {
   return format(
-    startOfWeek(date, { weekStartsOn: CALENDAR_CONFIG.weekStartsOn }),
+    startOfWeek(date, { weekStartsOn }),
     "yyyy-MM-dd"
   )
 }
@@ -296,9 +289,11 @@ function layoutEvents(events: CalendarEvent[]): LayoutEvent[] {
 function MiniCalendar({
   weekStart,
   onSelectWeek,
+  weekStartsOn,
 }: {
   weekStart: Date
   onSelectWeek: (d: Date) => void
+  weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6
 }) {
   const [month, setMonth] = useState(() => startOfMonth(weekStart))
 
@@ -310,12 +305,8 @@ function MiniCalendar({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [weekStart])
 
-  const firstDay = startOfWeek(month, {
-    weekStartsOn: CALENDAR_CONFIG.weekStartsOn,
-  })
-  const lastDay = endOfWeek(endOfMonth(month), {
-    weekStartsOn: CALENDAR_CONFIG.weekStartsOn,
-  })
+  const firstDay = startOfWeek(month, { weekStartsOn })
+  const lastDay = endOfWeek(endOfMonth(month), { weekStartsOn })
   const days = eachDayOfInterval({ start: firstDay, end: lastDay })
 
   // Group into weeks (rows of 7)
@@ -369,9 +360,7 @@ function MiniCalendar({
             key={wi}
             onClick={() =>
               onSelectWeek(
-                startOfWeek(week[0] as Date, {
-                  weekStartsOn: CALENDAR_CONFIG.weekStartsOn,
-                })
+                startOfWeek(week[0] as Date, { weekStartsOn })
               )
             }
             className={cn(
@@ -574,8 +563,11 @@ function WeekNav({
 // ── Main Component ─────────────────────────────────────────────────────────────
 
 export function ScheduleClient() {
+  const { settings } = useSettings()
+  const weekStartsOn = settings.weekStartsOn as 0 | 1 | 2 | 3 | 4 | 5 | 6
+
   const [weekStart, setWeekStart] = useState<Date>(() =>
-    startOfWeek(new Date(), { weekStartsOn: CALENDAR_CONFIG.weekStartsOn })
+    startOfWeek(new Date(), { weekStartsOn: settings.weekStartsOn })
   )
   const [events, setEvents] = useState<CalendarEvent[]>([])
   const [authError, setAuthError] = useState<string | null>(null)
@@ -589,9 +581,7 @@ export function ScheduleClient() {
   const eventsCache = useRef<Map<string, CalendarEvent[]>>(new Map())
 
   const weekDays = getWeekDays(weekStart)
-  const weekEnd = endOfWeek(weekStart, {
-    weekStartsOn: CALENDAR_CONFIG.weekStartsOn,
-  })
+  const weekEnd = endOfWeek(weekStart, { weekStartsOn })
   const headerSubtitle =
     format(weekStart, "MMM d") +
     " – " +
@@ -643,9 +633,7 @@ export function ScheduleClient() {
     ): Promise<CalendarEvent[] | null> => {
       try {
         const timeMin = startOfDay(weekStartDate).toISOString()
-        const timeMax = endOfWeek(weekStartDate, {
-          weekStartsOn: CALENDAR_CONFIG.weekStartsOn,
-        }).toISOString()
+        const timeMax = endOfWeek(weekStartDate, { weekStartsOn }).toISOString()
         const calendarIdsParam =
           calIds.length > 0 ? calIds.join(",") : "primary"
         const res = await fetch(
@@ -658,7 +646,7 @@ export function ScheduleClient() {
         }
         if (!res.ok) return null
         const data: CalendarEvent[] = await res.json()
-        const key = weekKey(weekStartDate)
+        const key = weekKey(weekStartDate, weekStartsOn)
         eventsCache.current.set(key, data)
         writeSessionCache(key, data)
         return data
@@ -666,15 +654,15 @@ export function ScheduleClient() {
         return null
       }
     },
-    []
+    [weekStartsOn]
   )
 
   // Load events for the current week; show cache immediately, then refresh in background
   useEffect(() => {
     let cancelled = false
     const calIds = calendars.length > 0 ? calendars.map((c) => c.id) : []
-    const key = weekKey(weekStart)
-    const refreshMs = CALENDAR_CONFIG.eventRefreshIntervalMinutes * 60 * 1000
+    const key = weekKey(weekStart, weekStartsOn)
+    const refreshMs = settings.eventRefreshIntervalMinutes * 60 * 1000
 
     // 1. In-memory cache → instant display
     const inMemory = eventsCache.current.get(key)
@@ -712,7 +700,7 @@ export function ScheduleClient() {
 
   // Background refresh every N minutes
   useEffect(() => {
-    const ms = CALENDAR_CONFIG.eventRefreshIntervalMinutes * 60 * 1000
+    const ms = settings.eventRefreshIntervalMinutes * 60 * 1000
     const interval = setInterval(() => {
       const calIds = calendars.length > 0 ? calendars.map((c) => c.id) : []
       fetchWeek(weekStart, calIds).then((data) => {
@@ -722,15 +710,14 @@ export function ScheduleClient() {
       fetchWeek(addWeeks(weekStart, 1), calIds)
     }, ms)
     return () => clearInterval(interval)
-  }, [weekStart, calendars, fetchWeek])
+  }, [weekStart, calendars, fetchWeek, settings.eventRefreshIntervalMinutes])
 
-  // Scroll to day start hour on mount
+  // Scroll to day start hour on mount (or when setting changes)
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop =
-        CALENDAR_CONFIG.dayScrollStartHour * HOUR_HEIGHT
+      scrollRef.current.scrollTop = settings.dayScrollStartHour * HOUR_HEIGHT
     }
-  }, [])
+  }, [settings.dayScrollStartHour])
 
   // Update current time indicator every minute
   useEffect(() => {
@@ -788,11 +775,7 @@ export function ScheduleClient() {
             onPrev={() => setWeekStart((w) => subWeeks(w, 1))}
             onNext={() => setWeekStart((w) => addWeeks(w, 1))}
             onToday={() =>
-              setWeekStart(
-                startOfWeek(new Date(), {
-                  weekStartsOn: CALENDAR_CONFIG.weekStartsOn,
-                })
-              )
+              setWeekStart(startOfWeek(new Date(), { weekStartsOn }))
             }
           />
         }
@@ -811,7 +794,7 @@ export function ScheduleClient() {
         <div className="flex flex-1 overflow-hidden">
           {/* ── Left sidebar ── */}
           <div className="flex w-52 shrink-0 flex-col overflow-y-auto border-r border-border">
-            <MiniCalendar weekStart={weekStart} onSelectWeek={setWeekStart} />
+            <MiniCalendar weekStart={weekStart} onSelectWeek={setWeekStart} weekStartsOn={weekStartsOn} />
             <div className="mx-2 border-t border-border" />
             <CalendarList
               calendars={calendars}

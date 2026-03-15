@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   ArrowUpDownIcon,
@@ -30,6 +31,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@workspace/ui/components/sidebar"
+import { SettingsModal } from "@/components/settings/settings-modal"
 
 export function NavUser({
   user,
@@ -37,6 +39,7 @@ export function NavUser({
   user: { name: string; email: string; avatar?: string }
 }) {
   const { isMobile } = useSidebar()
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   return (
     <SidebarMenu>
@@ -55,9 +58,15 @@ export function NavUser({
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-xs text-muted-foreground">{user.email}</span>
+                <span className="truncate text-xs text-muted-foreground">
+                  {user.email}
+                </span>
               </div>
-              <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-auto size-4" strokeWidth={2} />
+              <HugeiconsIcon
+                icon={ArrowUpDownIcon}
+                className="ml-auto size-4"
+                strokeWidth={2}
+              />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -76,7 +85,9 @@ export function NavUser({
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs text-muted-foreground">{user.email}</span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    {user.email}
+                  </span>
                 </div>
               </div>
             </DropdownMenuLabel>
@@ -86,7 +97,7 @@ export function NavUser({
                 <HugeiconsIcon icon={UserCircleIcon} strokeWidth={2} />
                 Account
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSettingsOpen(true)}>
                 <HugeiconsIcon icon={SettingsIcon} strokeWidth={2} />
                 Settings
               </DropdownMenuItem>
@@ -102,6 +113,11 @@ export function NavUser({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        <SettingsModal
+          open={settingsOpen}
+          onOpenChange={setSettingsOpen}
+          userEmail={user.email}
+        />
       </SidebarMenuItem>
     </SidebarMenu>
   )
