@@ -10,6 +10,7 @@ import {
   PencilEdit01Icon,
   MoreVerticalIcon,
   Calendar01Icon,
+  UserMultipleIcon,
 } from "@hugeicons/core-free-icons"
 import { cn } from "@workspace/ui/lib/utils"
 import {
@@ -47,11 +48,14 @@ export function TodoItem({
     : todo.progress
 
   // Always show the bar when there are sub-tasks, even at 0%
-  const showProgress = hasSubTodos || (progressValue != null && progressValue > 0)
+  const showProgress =
+    hasSubTodos || (progressValue != null && progressValue > 0)
 
   const isCompleted = hasSubTodos ? completedSubs === totalSubs : todo.completed
 
-  const dateLabel = todo.dueDate ? format(parseISO(todo.dueDate), "MMM d") : null
+  const dateLabel = todo.dueDate
+    ? format(parseISO(todo.dueDate), "MMM d")
+    : null
 
   const checkboxRef = useRef<HTMLDivElement>(null)
 
@@ -109,8 +113,8 @@ export function TodoItem({
         <div className="min-w-0 flex-1">
           <span
             className={cn(
-              "font-medium leading-tight",
-              isCompleted && "line-through text-muted-foreground"
+              "leading-tight font-medium",
+              isCompleted && "text-muted-foreground line-through"
             )}
           >
             {todo.title}
@@ -118,7 +122,7 @@ export function TodoItem({
 
           {/* Description */}
           {todo.description && (
-            <p className="mt-1 text-sm text-muted-foreground whitespace-pre-wrap">
+            <p className="mt-1 text-sm whitespace-pre-wrap text-muted-foreground">
               {todo.description}
             </p>
           )}
@@ -134,7 +138,9 @@ export function TodoItem({
                       const completing = !sub.completed
                       const willFinishAll =
                         completing &&
-                        todo.subTodos.filter((s) => s.id !== sub.id && !s.completed).length === 0
+                        todo.subTodos.filter(
+                          (s) => s.id !== sub.id && !s.completed
+                        ).length === 0
                       if (willFinishAll) {
                         const btn = e.currentTarget
                         const rect = btn.getBoundingClientRect()
@@ -143,7 +149,8 @@ export function TodoItem({
                           spread: 70,
                           origin: {
                             x: (rect.left + rect.width / 2) / window.innerWidth,
-                            y: (rect.top + rect.height / 2) / window.innerHeight,
+                            y:
+                              (rect.top + rect.height / 2) / window.innerHeight,
                           },
                           startVelocity: 20,
                           gravity: 1.2,
@@ -170,7 +177,7 @@ export function TodoItem({
                   <span
                     className={cn(
                       "text-sm",
-                      sub.completed && "line-through text-muted-foreground"
+                      sub.completed && "text-muted-foreground line-through"
                     )}
                   >
                     {sub.title}
@@ -181,7 +188,12 @@ export function TodoItem({
           )}
 
           {/* Footer row */}
-          <div className="mt-2 flex items-center gap-1.5 flex-wrap">
+          <div className="mt-4 flex items-center gap-1 text-xs text-muted-foreground">
+            <HugeiconsIcon
+              icon={Calendar01Icon}
+              className="size-3"
+              strokeWidth={2}
+            />
             {dateLabel && (
               <span
                 className={cn(
@@ -200,7 +212,7 @@ export function TodoItem({
                 )}
                 <span className="flex items-center gap-1 text-xs text-muted-foreground">
                   <HugeiconsIcon
-                    icon={Calendar01Icon}
+                    icon={UserMultipleIcon}
                     className="size-3"
                     strokeWidth={2}
                   />
@@ -212,12 +224,12 @@ export function TodoItem({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex shrink-0 items-center gap-1">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="flex size-7 items-center justify-center rounded-md text-muted-foreground opacity-0 hover:bg-accent hover:text-foreground transition-all group-hover:opacity-100 focus:opacity-100"
+                className="flex size-7 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-all group-hover:opacity-100 hover:bg-accent hover:text-foreground focus:opacity-100"
               >
                 <HugeiconsIcon
                   icon={MoreVerticalIcon}
@@ -254,7 +266,7 @@ export function TodoItem({
 
       {/* Progress bar */}
       {showProgress && (
-        <div className="mt-3">
+        <div className="mt-3 pr-8 pl-8">
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
             <div
               className="h-full rounded-full bg-primary"

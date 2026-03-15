@@ -116,8 +116,12 @@ export function AddTodoDialog({
     try {
       const now = new Date().toISOString()
       const future = addDays(new Date(), 14).toISOString()
+      const calRes = await fetch('/api/schedule/calendars')
+      const calendarIds = calRes.ok
+        ? (await calRes.json() as { id: string }[]).map((c) => c.id).join(',')
+        : 'primary'
       const res = await fetch(
-        `/api/schedule/events?timeMin=${now}&timeMax=${future}&calendarIds=primary`
+        `/api/schedule/events?timeMin=${now}&timeMax=${future}&calendarIds=${encodeURIComponent(calendarIds)}`
       )
       if (res.ok) {
         const data: CalendarEventOption[] = await res.json()

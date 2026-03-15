@@ -5,6 +5,7 @@ import { format, addDays } from "date-fns"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   Calendar01Icon,
+  UserMultipleIcon,
   Tick02Icon,
   Add01Icon,
   Cancel01Icon,
@@ -49,7 +50,11 @@ interface InlineEditTodoProps {
   onCancel: () => void
 }
 
-export function InlineEditTodo({ todo, onSave, onCancel }: InlineEditTodoProps) {
+export function InlineEditTodo({
+  todo,
+  onSave,
+  onCancel,
+}: InlineEditTodoProps) {
   const [title, setTitle] = useState(todo.title)
   const [description, setDescription] = useState(todo.description ?? "")
   const [dueDate, setDueDate] = useState<Date | undefined>(
@@ -57,24 +62,31 @@ export function InlineEditTodo({ todo, onSave, onCancel }: InlineEditTodoProps) 
   )
   const [dueDateOpen, setDueDateOpen] = useState(false)
   const [subTodos, setSubTodos] = useState<SubTodoDraft[]>(
-    todo.subTodos.map((s) => ({ id: s.id, title: s.title, completed: s.completed }))
+    todo.subTodos.map((s) => ({
+      id: s.id,
+      title: s.title,
+      completed: s.completed,
+    }))
   )
   const [newSubTitle, setNewSubTitle] = useState("")
   const [editingSubIndex, setEditingSubIndex] = useState<number | null>(null)
   const [editingSubTitle, setEditingSubTitle] = useState("")
   const [eventSearch, setEventSearch] = useState("")
   const [eventPickerOpen, setEventPickerOpen] = useState(false)
-  const [calendarEvents, setCalendarEvents] = useState<CalendarEventOption[]>([])
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEventOption | null>(
-    todo.eventId
-      ? {
-          id: todo.eventId,
-          summary: todo.eventSummary ?? todo.eventId,
-          start: {},
-          calendarId: todo.eventCalendarId ?? "",
-        }
-      : null
+  const [calendarEvents, setCalendarEvents] = useState<CalendarEventOption[]>(
+    []
   )
+  const [selectedEvent, setSelectedEvent] =
+    useState<CalendarEventOption | null>(
+      todo.eventId
+        ? {
+            id: todo.eventId,
+            summary: todo.eventSummary ?? todo.eventId,
+            start: {},
+            calendarId: todo.eventCalendarId ?? "",
+          }
+        : null
+    )
   const [loadingEvents, setLoadingEvents] = useState(false)
   const [saving, setSaving] = useState(false)
   const titleRef = useRef<HTMLInputElement>(null)
@@ -88,8 +100,12 @@ export function InlineEditTodo({ todo, onSave, onCancel }: InlineEditTodoProps) 
     try {
       const now = new Date().toISOString()
       const future = addDays(new Date(), 14).toISOString()
+      const calRes = await fetch("/api/schedule/calendars")
+      const calendarIds = calRes.ok
+        ? ((await calRes.json()) as { id: string }[]).map((c) => c.id).join(",")
+        : "primary"
       const res = await fetch(
-        `/api/schedule/events?timeMin=${now}&timeMax=${future}&calendarIds=primary`
+        `/api/schedule/events?timeMin=${now}&timeMax=${future}&calendarIds=${encodeURIComponent(calendarIds)}`
       )
       if (res.ok) setCalendarEvents(await res.json())
     } catch {
@@ -120,7 +136,9 @@ export function InlineEditTodo({ todo, onSave, onCancel }: InlineEditTodoProps) 
     const trimmed = editingSubTitle.trim()
     if (trimmed) {
       setSubTodos((prev) =>
-        prev.map((s, i) => (i === editingSubIndex ? { ...s, title: trimmed } : s))
+        prev.map((s, i) =>
+          i === editingSubIndex ? { ...s, title: trimmed } : s
+        )
       )
     }
     setEditingSubIndex(null)
@@ -173,7 +191,7 @@ export function InlineEditTodo({ todo, onSave, onCancel }: InlineEditTodoProps) 
           {/* Title */}
           <input
             ref={titleRef}
-            className="w-full bg-transparent font-medium leading-tight outline-none placeholder:text-muted-foreground"
+            className="w-full bg-transparent leading-tight font-medium outline-none placeholder:text-muted-foreground"
             placeholder="What needs to be done?"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -349,17 +367,22 @@ export function InlineEditTodo({ todo, onSave, onCancel }: InlineEditTodoProps) 
               </Popover>
 
               {/* Event picker */}
-              <Popover open={eventPickerOpen} onOpenChange={handleEventPickerOpen}>
+              <Popover
+                open={eventPickerOpen}
+                onOpenChange={handleEventPickerOpen}
+              >
                 <PopoverTrigger asChild>
                   <button
                     type="button"
                     className={cn(
                       "flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs transition-colors hover:bg-accent",
-                      selectedEvent ? "text-foreground" : "text-muted-foreground"
+                      selectedEvent
+                        ? "text-foreground"
+                        : "text-muted-foreground"
                     )}
                   >
                     <HugeiconsIcon
-                      icon={Calendar01Icon}
+                      icon={UserMultipleIcon}
                       className="size-3.5"
                       strokeWidth={2}
                     />

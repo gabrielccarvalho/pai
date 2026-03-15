@@ -96,5 +96,14 @@ export async function GET(req: NextRequest) {
     calendarIds.map((calId) => fetchCalendarEvents(calId, timeMin, timeMax, accessToken))
   )
 
-  return NextResponse.json(allEvents.flat())
+  const sorted = allEvents.flat().sort((a, b) => {
+    const aTime = (a as { start?: { dateTime?: string; date?: string } }).start?.dateTime
+      ?? (a as { start?: { dateTime?: string; date?: string } }).start?.date
+      ?? ''
+    const bTime = (b as { start?: { dateTime?: string; date?: string } }).start?.dateTime
+      ?? (b as { start?: { dateTime?: string; date?: string } }).start?.date
+      ?? ''
+    return aTime < bTime ? -1 : aTime > bTime ? 1 : 0
+  })
+  return NextResponse.json(sorted)
 }
