@@ -31,6 +31,10 @@ dist
 # Debug
 npm-debug.log*
 
+# Tauri
+apps/desktop/src-tauri/target/
+apps/desktop/src-tauri/gen/
+
 # Misc
 .DS_Store
 *.pem

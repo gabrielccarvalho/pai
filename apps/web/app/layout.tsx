@@ -35,7 +35,8 @@ export default function RootLayout({
         figtree.variable
       )}
     >
-      <body>
+      <body className="pt-8">
+        <div data-tauri-drag-region className="fixed top-0 left-0 right-0 h-8 z-50 bg-background" />
         <ThemeProvider>
           <TooltipProvider>
             <Toaster />

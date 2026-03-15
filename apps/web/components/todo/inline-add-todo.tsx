@@ -62,7 +62,7 @@ export function InlineAddTodo({ onSave }: InlineAddTodoProps) {
 
   function startEditSub(index: number) {
     setEditingSubIndex(index)
-    setEditingSubTitle(subTodos[index].title)
+    setEditingSubTitle(subTodos[index]!.title)
   }
 
   function commitEditSub() {

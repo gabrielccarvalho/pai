@@ -112,7 +112,7 @@ export function InlineEditTodo({ todo, onSave, onCancel }: InlineEditTodoProps) 
 
   function startEditSub(index: number) {
     setEditingSubIndex(index)
-    setEditingSubTitle(subTodos[index].title)
+    setEditingSubTitle(subTodos[index]!.title)
   }
 
   function commitEditSub() {

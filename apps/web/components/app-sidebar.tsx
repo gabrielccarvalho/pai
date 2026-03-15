@@ -41,7 +41,7 @@ export function AppSidebar({
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader>
+      <SidebarHeader className="mt-6">
         <Link
           href="/"
           className="flex items-center gap-2 rounded-md p-2 group-data-[collapsible=icon]:justify-center hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
@@ -92,7 +92,13 @@ export function AppSidebar({
       </SidebarContent>
 
       <SidebarFooter>
-        <NavUser user={{ name: user.name ?? "", email: user.email, avatar: user.image ?? undefined }} />
+        <NavUser
+          user={{
+            name: user.name ?? "",
+            email: user.email,
+            avatar: user.image ?? undefined,
+          }}
+        />
       </SidebarFooter>
 
       <SidebarRail />

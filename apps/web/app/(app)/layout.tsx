@@ -10,8 +10,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const user = session?.user ?? { name: '', email: '' }
 
   return (
-    <SidebarProvider defaultOpen={defaultSidebarOpen} className="max-h-svh overflow-hidden">
-      <AppSidebar user={user} />
+    <SidebarProvider defaultOpen={defaultSidebarOpen} className="min-h-0 h-[calc(100svh-2rem)] overflow-hidden">
+      <AppSidebar user={{ name: user.name ?? '', email: user.email ?? '', image: 'image' in user ? user.image : undefined }} />
       <SidebarInset className="overflow-hidden">{children}</SidebarInset>
     </SidebarProvider>
   )

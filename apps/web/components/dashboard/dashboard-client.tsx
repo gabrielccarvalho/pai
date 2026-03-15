@@ -1,18 +1,10 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import {
-  format,
-  startOfDay,
-  endOfDay,
-  parseISO,
-  isBefore,
-  isWithinInterval,
-} from "date-fns"
+import { format, startOfDay, endOfDay } from "date-fns"
 import { ScheduleWidget } from "./schedule-widget"
 import { TodoWidget } from "./todo-widget"
 import { HoursChartWidget } from "./hours-chart-widget"
-import { QuickNav } from "./quick-nav"
 import type { TaskBoard, Todo, CalendarEvent } from "../../lib/types"
 
 function getGreeting(now: Date): string {
@@ -77,19 +69,6 @@ export function DashboardClient({
     fetchTodos()
     fetchEvents()
   }, [fetchTodos, fetchEvents])
-
-  const today = startOfDay(now)
-  const endToday = endOfDay(now)
-  const rootTodos = todos.filter((t) => !t.parentId)
-  const overdueTodos = rootTodos.filter(
-    (t) => !t.completed && t.dueDate && isBefore(parseISO(t.dueDate), today)
-  )
-  const dueTodayTodos = rootTodos.filter(
-    (t) =>
-      !t.completed &&
-      t.dueDate &&
-      isWithinInterval(parseISO(t.dueDate), { start: today, end: endToday })
-  )
 
   const firstName = userName.split(" ")[0] ?? userName
   const greeting = getGreeting(now)

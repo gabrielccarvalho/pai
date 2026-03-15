@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pai</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background: #ffffff;
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        gap: 16px;
+      }
+      .logo {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+      }
+      .spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #f0e6ff;
+        border-top-color: #8023FE;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+  </head>
+  <body>
+    <svg class="logo" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="256" height="256" rx="24" fill="#8023FE"/>
+      <path d="M192 80.4197V146.577L185.544 149.48L105.391 184.969L105.235 213.466L83.9585 224L66.6595 214.226L88.6156 204.813V174.478L176.921 136.704V87.8911L105.223 55.8347L105.379 142.248L86.9248 149.982V32.272L192 80.4197ZM80.7694 158.002L154.009 127.362L153.834 98.8515L111.228 80.5513V63.7514L170.766 90.4984V133.384L82.4602 171.158V201.497L64 209.414V40.4233L80.7694 32V158.002Z" fill="white"/>
+    </svg>
+    <div class="spinner"></div>
+  </body>
+</html>

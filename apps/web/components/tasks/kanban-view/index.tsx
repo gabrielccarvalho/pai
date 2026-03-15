@@ -43,17 +43,17 @@ function buildItems(tasks: Task[], statusCol: Column): Items {
   for (const task of tasks) {
     const colId = task.values[statusCol.id] as string | undefined
     const key = colId && result[colId] !== undefined ? colId : "__no_status__"
-    result[key].push(task)
+    result[key]!.push(task)
   }
   for (const key of Object.keys(result)) {
-    result[key].sort((a, b) => a.order - b.order)
+    result[key]!.sort((a, b) => a.order - b.order)
   }
   return result
 }
 
 function findContainer(id: string, items: Items): string | undefined {
   if (id in items) return id
-  return Object.keys(items).find((key) => items[key].some((t) => t.id === id))
+  return Object.keys(items).find((key) => items[key]!.some((t) => t.id === id))
 }
 
 export function KanbanView({
@@ -118,15 +118,15 @@ export function KanbanView({
 
       if (activeContainer === overContainer) {
         // Within-column reorder
-        const oldIndex = prev[activeContainer].findIndex((t) => t.id === activeId)
-        const newIndex = prev[activeContainer].findIndex((t) => t.id === overId)
+        const oldIndex = prev[activeContainer]!.findIndex((t) => t.id === activeId)
+        const newIndex = prev[activeContainer]!.findIndex((t) => t.id === overId)
         if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) return prev
-        return { ...prev, [activeContainer]: arrayMove(prev[activeContainer], oldIndex, newIndex) }
+        return { ...prev, [activeContainer]: arrayMove(prev[activeContainer]!, oldIndex, newIndex) }
       }
 
       // Cross-column move — skip if the active card is already at the same spot
-      const activeItems = prev[activeContainer]
-      const overItems = prev[overContainer]
+      const activeItems = prev[activeContainer]!
+      const overItems = prev[overContainer]!
       const activeIndex = activeItems.findIndex((t) => t.id === activeId)
       if (activeIndex === -1) return prev
 
@@ -144,11 +144,11 @@ export function KanbanView({
 
       return {
         ...prev,
-        [activeContainer]: prev[activeContainer].filter((t) => t.id !== activeId),
+        [activeContainer]: prev[activeContainer]!.filter((t) => t.id !== activeId),
         [overContainer]: [
-          ...prev[overContainer].slice(0, newIndex),
-          activeItems[activeIndex],
-          ...prev[overContainer].slice(newIndex),
+          ...prev[overContainer]!.slice(0, newIndex),
+          activeItems[activeIndex]!,
+          ...prev[overContainer]!.slice(newIndex),
         ],
       }
     })

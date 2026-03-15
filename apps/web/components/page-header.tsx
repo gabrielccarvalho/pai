@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react'
-import { cn } from '@workspace/ui/lib/utils'
+import type { ReactNode } from "react"
+import { cn } from "@workspace/ui/lib/utils"
 
 interface PageHeaderProps {
   title: string
@@ -8,16 +8,23 @@ interface PageHeaderProps {
   className?: string
 }
 
-export function PageHeader({ title, subtitle, actions, className }: PageHeaderProps) {
+export function PageHeader({
+  title,
+  subtitle,
+  actions,
+  className,
+}: PageHeaderProps) {
   return (
     <div
       className={cn(
-        'flex items-center justify-between border-b border-border px-6 py-4',
+        "flex items-center justify-between border-b border-border px-6 py-4",
         className
       )}
     >
       <div className="flex flex-col gap-0.5">
-        <h1 className="text-lg font-semibold leading-tight tracking-tight">{title}</h1>
+        <h1 className="text-lg leading-tight font-semibold tracking-tight">
+          {title}
+        </h1>
         {subtitle && (
           <p className="text-sm text-muted-foreground">{subtitle}</p>
         )}
