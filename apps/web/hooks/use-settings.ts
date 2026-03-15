@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 export interface AppSettings {
   theme: "light" | "dark" | "system"
@@ -42,7 +42,7 @@ export function applyAccentColor(hex: string) {
   document.documentElement.style.setProperty("--sidebar-primary-foreground", foreground)
 }
 
-function loadSettings(): AppSettings {
+function loadLocalSettings(): AppSettings {
   if (typeof window === "undefined") return DEFAULT_SETTINGS
 
   const raw = localStorage.getItem(SETTINGS_KEY)
@@ -67,7 +67,20 @@ function loadSettings(): AppSettings {
 }
 
 export function useSettings() {
-  const [settings, setSettings] = useState<AppSettings>(loadSettings)
+  const [settings, setSettings] = useState<AppSettings>(loadLocalSettings)
+
+  // Hydrate from server on mount
+  useEffect(() => {
+    fetch("/api/user/settings")
+      .then((res) => res.ok ? res.json() : null)
+      .then((serverSettings: Partial<AppSettings> | null) => {
+        if (!serverSettings || Object.keys(serverSettings).length === 0) return
+        const merged = { ...DEFAULT_SETTINGS, ...serverSettings }
+        setSettings(merged)
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(merged))
+      })
+      .catch(() => {/* fall back to localStorage */})
+  }, [])
 
   function updateSettings(partial: Partial<AppSettings>) {
     const next = { ...settings, ...partial }
@@ -75,6 +88,11 @@ export function useSettings() {
     if (typeof window !== "undefined") {
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(next))
     }
+    fetch("/api/user/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(next),
+    }).catch(() => {/* optimistic — localStorage already updated */})
   }
 
   return { settings, updateSettings }

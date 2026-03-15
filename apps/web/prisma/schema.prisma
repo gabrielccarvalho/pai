@@ -21,6 +21,7 @@ model User {
   sessions      Session[]
   boards        TaskBoard[]
   todos         Todo[]
+  settings      Json?
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 }

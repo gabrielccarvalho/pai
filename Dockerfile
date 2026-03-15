@@ -44,10 +44,25 @@ COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
 # Copy static assets into the expected location within standalone
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
 
+# Copy prisma schema, migrations, and config for migrate deploy at startup
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/prisma ./apps/web/prisma
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/prisma.config.ts ./apps/web/prisma.config.ts
+
+# Install prisma in a clean temp dir (avoids workspace: protocol in the app's package.json)
+# then merge the full node_modules tree so all transitive deps are available at migrate time
+WORKDIR /tmp
+RUN npm install prisma@7 --no-package-lock \
+ && cp -r node_modules/. /app/apps/web/node_modules/
+WORKDIR /app
+
+# Copy entrypoint
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/entrypoint.sh ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
+
 USER nextjs
 
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "apps/web/server.js"]
+CMD ["sh", "./entrypoint.sh"]
