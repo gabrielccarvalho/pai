@@ -73,26 +73,34 @@ export function TodoWidget({
   const endToday = endOfDay(now)
 
   const rootTodos = todos.filter((t) => !t.parentId)
-  const overdueTodos = rootTodos.filter(
-    (t) => !t.completed && t.dueDate && isBefore(parseISO(t.dueDate), today)
+
+  // Todos due today or earlier (overdue), regardless of completion status
+  const todaysTodos = rootTodos.filter(
+    (t) =>
+      t.dueDate &&
+      (isBefore(parseISO(t.dueDate), today) ||
+        isWithinInterval(parseISO(t.dueDate), { start: today, end: endToday }))
   )
-  const dueTodayTodos = rootTodos.filter(
+
+  const overdueTodos = todaysTodos.filter(
+    (t) => !t.completed && isBefore(parseISO(t.dueDate!), today)
+  )
+  const dueTodayTodos = todaysTodos.filter(
     (t) =>
       !t.completed &&
-      t.dueDate &&
-      isWithinInterval(parseISO(t.dueDate), { start: today, end: endToday })
+      isWithinInterval(parseISO(t.dueDate!), { start: today, end: endToday })
   )
-  const completedRecent = rootTodos
+  const completedRecent = todaysTodos
     .filter((t) => t.completed)
     .sort(
       (a, b) =>
         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
     )
 
-  const completedCount = rootTodos.filter((t) => t.completed).length
+  const completedCount = todaysTodos.filter((t) => t.completed).length
   const completionRate =
-    rootTodos.length > 0
-      ? Math.round((completedCount / rootTodos.length) * 100)
+    todaysTodos.length > 0
+      ? Math.round((completedCount / todaysTodos.length) * 100)
       : 0
 
   // Priority order: overdue → due today → recently completed
@@ -109,7 +117,7 @@ export function TodoWidget({
       style={{ height: "320px" }}
     >
       <CardHeader className="shrink-0 pb-3">
-        <CardTitle className="text-sm font-semibold">To-dos</CardTitle>
+        <CardTitle className="text-sm font-semibold">Today&apos;s to-dos</CardTitle>
       </CardHeader>
       <CardContent className="flex min-h-0 flex-1 flex-col pt-0">
         {loading ? (
@@ -121,7 +129,7 @@ export function TodoWidget({
         ) : (
           <>
             {/* Progress ring + stats */}
-            {rootTodos.length > 0 && (
+            {todaysTodos.length > 0 && (
               <div className="mb-3 flex shrink-0 items-center gap-4">
                 <div className="relative shrink-0">
                   <ProgressRing rate={completionRate} />
@@ -131,7 +139,7 @@ export function TodoWidget({
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground">
-                    {completedCount} of {rootTodos.length} completed
+                    {completedCount} of {todaysTodos.length} completed
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {overdueTodos.length > 0 && (
@@ -156,7 +164,7 @@ export function TodoWidget({
 
             {/* Todo list */}
             <div className="min-h-0 flex-1">
-              {rootTodos.length === 0 ? (
+              {todaysTodos.length === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center text-center">
                   <p className="text-sm text-muted-foreground">
                     No to-dos today

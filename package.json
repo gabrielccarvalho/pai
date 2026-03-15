@@ -5,6 +5,8 @@
   "scripts": {
     "build": "turbo build",
     "build:app": "pnpm --filter web build && pnpm --filter @workspace/desktop build",
+    "dev:web": "pnpm --filter web dev",
+    "build:docker": "docker compose up -d --build",
     "dev": "turbo dev",
     "lint": "turbo lint",
     "format": "turbo format",

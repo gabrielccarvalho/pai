@@ -11,6 +11,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@workspace/ui/lib/utils"
 import { TooltipProvider } from "@workspace/ui/components/tooltip"
 import { Toaster } from "@workspace/ui/components/sonner"
+import { TauriTitlebar } from "@/components/tauri-titlebar"
 
 const figtree = Figtree({ subsets: ["latin"], variable: "--font-sans" })
 
@@ -35,8 +36,8 @@ export default function RootLayout({
         figtree.variable
       )}
     >
-      <body className="pt-8">
-        <div data-tauri-drag-region className="fixed top-0 left-0 right-0 h-8 z-50 bg-background" />
+      <body>
+        <TauriTitlebar />
         <ThemeProvider>
           <TooltipProvider>
             <Toaster />

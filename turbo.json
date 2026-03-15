@@ -5,7 +5,7 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**"],
+      "outputs": [".next/**", "!.next/cache/**", "public/**"],
       "env": ["NODE_ENV", "DATABASE_URL", "AUTH_GOOGLE_ID", "AUTH_GOOGLE_SECRET"]
     },
     "lint": {
@@ -21,7 +21,7 @@
       "cache": false,
       "persistent": true
     },
-    "desktop#build": {
+    "@workspace/desktop#build": {
       "dependsOn": ["web#build"],
       "outputs": ["src-tauri/target/release/bundle/**"]
     }
