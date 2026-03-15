@@ -5,7 +5,7 @@
   "scripts": {
     "build": "turbo build",
     "build:docker": "docker compose build --no-cache && docker compose up -d",
-    "build:app": "pnpm --filter web build && pnpm --filter @workspace/desktop build && docker compose build --no-cache && docker compose up -d",
+    "build:app": "pnpm --filter @workspace/desktop build",
     "dev:web": "pnpm --filter web dev",
     "dev": "turbo dev",
     "lint": "turbo lint",

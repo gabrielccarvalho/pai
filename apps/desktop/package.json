@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "tauri dev",
-    "build": "node scripts/prepare-server.mjs && tauri build",
+    "build": "tauri build",
     "tauri": "tauri"
   },
   "dependencies": {
